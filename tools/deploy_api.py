@@ -60,6 +60,16 @@ def worker(method, path, token=None, payload=None, session=None):
         except ValueError:
             return e.code, {"raw": raw[:200]}
 
+def script_exists():
+    # The script-content GET returns a large multipart body that this
+    # connector's JSON reader chokes on; the settings GET is small JSON.
+    try:
+        cf("GET", f"/accounts/{ACCOUNT}/workers/scripts/{SCRIPT}/settings")
+        return True
+    except Exception as e:
+        print("script_exists check failed:", type(e).__name__)
+        return False
+
 def deploy():
     os.makedirs("/tmp/concord-416", exist_ok=True)
     if not os.path.exists(TOKEN_FILE):
@@ -81,7 +91,11 @@ def deploy():
             {"name": "PUBLISH_TOKEN", "type": "secret_text", "text": token},
             {"name": "PUBLIC_BASE", "type": "plain_text", "text": WORKER_URL},
         ],
-        "migrations": {"new_tag": "v1", "steps": [{"new_sqlite_classes": ["DashboardStore"]}]},
+        # First deploy creates the class under tag v1. Redeploys must name
+        # the existing tag as old_tag (Cloudflare error 10079 otherwise).
+        "migrations": ({"old_tag": "v1", "new_tag": "v1", "steps": []}
+                       if script_exists() else
+                       {"new_tag": "v1", "steps": [{"new_sqlite_classes": ["DashboardStore"]}]}),
     }).encode()
     parts = []
     parts.append(f"--{boundary}\r\nContent-Disposition: form-data; name=\"metadata\"\r\nContent-Type: application/json\r\n\r\n".encode() + metadata + b"\r\n")
