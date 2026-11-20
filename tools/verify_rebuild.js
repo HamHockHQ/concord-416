@@ -172,13 +172,14 @@ async function axeRun(page, label, axeResults) {
     }));
     check("Matt: calendar renders 3 months with 6 marked dates", cal.months === 3 && cal.marked === 6, JSON.stringify(cal));
     await page.evaluate(() => {
-      const b = document.querySelector('button.cal-day.has[data-date="2026-11-23"]');
+      const b = document.querySelector('button.cal-day.has[data-day="2026-11-23"]');
       if (b) b.click();
     });
     await page.waitForTimeout(200);
     const calDetail = await page.evaluate(() => document.getElementById("cal-detail").textContent);
     check("Matt: tapping Nov 23 shows the deposit deadline", /Earnest money deposit/.test(calDetail), calDetail.slice(0, 120));
     await page.screenshot({ path: path.join(OUT, "matt-calendar.png"), fullPage: true });
+    await axeRun(page, "matt-calendar", axeResults);
 
     // List expand
     await page.click("#dl-view-list");

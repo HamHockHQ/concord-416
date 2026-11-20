@@ -732,14 +732,13 @@
       var date = '<span class="tl-date">' + esc(x.dl.date) + '</span>';
       var above = (i % 2 === 0) ? name : date;
       var below = (i % 2 === 0) ? date : name;
-      // Accessible name must contain the visible text verbatim
-      // (axe label-content-name-mismatch): use the visible label and
-      // date strings, in their visible order, and nothing else.
-      var aria = (i % 2 === 0)
-        ? maybeScrub(x.dl.label) + " " + x.dl.date
-        : x.dl.date + " " + maybeScrub(x.dl.label);
+      // No aria-label here: the button's visible text (label + date)
+      // is its accessible name. An explicit aria-label on these
+      // multi-span buttons trips axe's label-content-name-mismatch
+      // even when identical to the visible text (verified live,
+      // 2026-11-20); name-from-content passes.
       html += '<button type="button" class="' + cls + '" data-dlkey="' + esc(x.k) + '" data-x="' + leftPx(x.dt.getTime()) +
-        '" style="left:' + leftPx(x.dt.getTime()) + 'px" aria-label="' + esc(aria) + '">' +
+        '" style="left:' + leftPx(x.dt.getTime()) + 'px">' +
         '<span class="tl-slot">' + above + '</span>' +
         '<span class="tl-dotwrap"><span class="tl-dot" aria-hidden="true"></span></span>' +
         '<span class="tl-slot below">' + below + '</span></button>';
@@ -815,7 +814,7 @@
         var dt = new Date(y, mo, day);
         var k = dayKey(dt);
         var dls = byDay[k];
-        var cls = "cal-day" + (k === todayK ? " today" : "");
+        var cls = "cal-day" + (k === todayK ? " today" : "") + (dls ? " has" : "");
         if (dls) {
           var names = dls.map(function (x) { return maybeScrub(x.label); }).join(", ");
           var aria = dt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ": " + names;
