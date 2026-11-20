@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Closing Tracker</title>
+<style>
+  :root {
+    --bg: #F4F4F3;
+    --card: #ffffff;
+    --ink: #1c1c1e;
+    --muted: #5c5e63;
+    --accent: #FF5A47;
+    --accent-dark: #C9331F;
+    --peach: #FFE9E4;
+    --mint: #DFF5E9;
+    --mint-ink: #14663C;
+    --gray-chip: #ECECEA;
+    --radius: 18px;
+    --shadow: 0 8px 30px rgba(0,0,0,.07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  a { color: var(--accent-dark); }
+  a:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 3px solid var(--accent-dark); outline-offset: 2px;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 48px; }
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 22px; margin-bottom: 16px;
+  }
+  h1 { font-size: 26px; margin: 0 0 4px; font-weight: 650; }
+  h2 { font-size: 18px; margin: 0 0 14px; font-weight: 650; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+
+  /* signed-out */
+  .signin { max-width: 440px; margin: 10vh auto 0; }
+  .signin label { display: block; font-weight: 600; margin: 16px 0 6px; }
+  .signin input {
+    width: 100%; padding: 13px 14px; font-size: 16px;
+    border: 1px solid #cfcfcb; border-radius: 12px; min-height: 48px;
+  }
+  .btn {
+    display: inline-block; border: 0; cursor: pointer; min-height: 48px;
+    padding: 13px 20px; border-radius: 12px; font-size: 16px; font-weight: 600;
+    background: var(--accent-dark); color: #fff; width: 100%; margin-top: 14px;
+  }
+  .btn.secondary { background: var(--gray-chip); color: var(--ink); width: auto; margin-top: 0; }
+
+  /* header */
+  header.top {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    justify-content: space-between; margin-bottom: 16px;
+  }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: var(--accent);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+  }
+
+  /* KPI row */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+  .kpi { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+  .kpi .label { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .kpi .value { font-size: 22px; font-weight: 650; line-height: 1.2; }
+  .kpi.coral { background: var(--accent); color: #fff; }
+  .kpi.coral .label { color: #fff; }
+  .kpi.coral .value { font-size: 24px; }
+
+  /* lists */
+  ul.clean { list-style: none; margin: 0; padding: 0; }
+  .row {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0; border-bottom: 1px solid #eee;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row .main { flex: 1; min-width: 0; }
+  .row .title { font-weight: 600; }
+  .chip {
+    flex: none; font-size: 12px; font-weight: 650; padding: 4px 10px;
+    border-radius: 999px; background: var(--gray-chip); color: var(--ink);
+  }
+  .chip.done { background: var(--mint); color: var(--mint-ink); }
+  .chip.waiting { background: var(--peach); color: #8a2a1c; }
+  .chip.needed { background: var(--peach); color: #8a2a1c; }
+  .progress { height: 8px; border-radius: 999px; background: var(--gray-chip); overflow: hidden; margin-top: 10px; }
+  .progress > div { height: 100%; background: var(--accent); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid2 > .card { margin-bottom: 0; }
+  .sectiongrid { display: grid; grid-template-columns: 1fr; gap: 0; }
+  @media (max-width: 760px) {
+    .kpis { grid-template-columns: 1fr 1fr; }
+    .grid2 { grid-template-columns: 1fr; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Signed-out view: no deal data exists on this page. -->
+  <main id="signedout" class="signin" hidden>
+    <div class="card">
+      <h1>Closing Tracker</h1>
+      <p class="muted">This dashboard is shared with the people working on one home purchase. Sign in with the email address your invitation was sent to, and we will email you a one-time sign-in link.</p>
+      <form id="reqform">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+        <button class="btn" type="submit">Email me a sign-in link</button>
+      </form>
+      <p id="reqmsg" class="small" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <!-- Signed-in view: rendered from the session-gated API. -->
+  <div id="app" hidden>
+    <header class="top">
+      <div>
+        <h1 id="addr">Closing Tracker</h1>
+        <p class="muted small" id="subtitle"></p>
+      </div>
+      <div class="who">
+        <div class="avatar" id="avatar" aria-hidden="true"></div>
+        <div>
+          <div id="viewername" style="font-weight:650"></div>
+          <div class="muted small" id="viewerrole"></div>
+        </div>
+        <button class="btn secondary" id="signout" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="kpis" aria-label="Key dates and progress">
+      <div class="kpi coral">
+        <div class="label">Next deadline</div>
+        <div class="value" id="k-next">-</div>
+        <div class="small" id="k-next-label"></div>
+      </div>
+      <div class="kpi">
+        <div class="label">Steps done</div>
+        <div class="value" id="k-steps">-</div>
+        <div class="progress" role="progressbar" aria-label="Steps completed" id="k-steps-bar-wrap">
+          <div id="k-steps-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="label">Open items for you</div>
+        <div class="value" id="k-open">-</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Settlement</div>
+        <div class="value" id="k-settle">-</div>
+      </div>
+    </section>
+
+    <div class="grid2">
+      <section class="card" aria-labelledby="h-deadlines">
+        <h2 id="h-deadlines">Deadlines</h2>
+        <ul class="clean" id="deadlines"></ul>
+      </section>
+      <section class="card" aria-labelledby="h-people">
+        <h2 id="h-people">People on this purchase</h2>
+        <ul class="clean" id="people"></ul>
+      </section>
+    </div>
+
+    <section class="card" aria-labelledby="h-steps" style="margin-top:16px">
+      <h2 id="h-steps">Steps</h2>
+      <ul class="clean" id="steps"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="h-docs">
+      <h2 id="h-docs">Documents</h2>
+      <ul class="clean" id="documents"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="h-open">
+      <h2 id="h-open">Open items</h2>
+      <ul class="clean" id="openitems"></ul>
+    </section>
+
+    <p class="muted small" id="foot"></p>
+  </div>
+
+  <p id="fatal" class="small" role="alert"></p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var API = "https://concord-416-api.howardmd1.workers.dev";
+  var KEY = "c416session";
+
+  // Take the session credential out of the URL fragment (set by the
+  // Worker's confirm page after a magic-link redeem) and store it.
+  if (location.hash.indexOf("session=") !== -1) {
+    var m = location.hash.match(/session=([^&]+)/);
+    if (m) {
+      try { sessionStorage.setItem(KEY, decodeURIComponent(m[1])); } catch (e) {}
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  }
+
+  function session() {
+    try { return sessionStorage.getItem(KEY); } catch (e) { return null; }
+  }
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function api(path, opts) {
+    opts = opts || {};
+    var headers = opts.headers || {};
+    var s = session();
+    if (s) headers["Authorization"] = "Bearer " + s;
+    return fetch(API + path, { method: opts.method || "GET", headers: headers, body: opts.body })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); });
+  }
+
+  var signedout = document.getElementById("signedout");
+  var app = document.getElementById("app");
+  var fatal = document.getElementById("fatal");
+
+  document.getElementById("reqform").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var email = document.getElementById("email").value;
+    var msg = document.getElementById("reqmsg");
+    msg.textContent = "One moment...";
+    fetch(API + "/auth/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      msg.textContent = d.message || "If that address has access, a sign-in link is on its way.";
+    }).catch(function () {
+      msg.textContent = "Something went wrong. Please try again.";
+    });
+  });
+
+  document.getElementById("signout").addEventListener("click", function () {
+    api("/api/signout", { method: "POST" }).finally(function () {
+      try { sessionStorage.removeItem(KEY); } catch (e) {}
+      location.reload();
+    });
+  });
+
+  function chipClass(status) {
+    if (status === "Done" || status === "On file") return "chip done";
+    if (status === "Waiting" || status === "Needed") return "chip waiting";
+    return "chip";
+  }
+
+  function render(d, me) {
+    document.getElementById("addr").textContent = d.meta.address || "Closing Tracker";
+    document.getElementById("subtitle").textContent =
+      "Agreement executed " + (d.meta.executionDate || "") + " - shared closing dashboard";
+    document.getElementById("viewername").textContent = me.name;
+    document.getElementById("viewerrole").textContent = me.role;
+    document.getElementById("avatar").textContent =
+      me.name.split(" ").map(function (w) { return w[0]; }).slice(0, 2).join("");
+
+    var now = new Date(); now.setHours(0, 0, 0, 0);
+    var next = null;
+    (d.deadlines || []).forEach(function (dl) {
+      var dt = new Date(dl.date);
+      if (!isNaN(dt) && dt >= now && (!next || dt < next.dt)) next = { dt: dt, dl: dl };
+    });
+    if (next) {
+      document.getElementById("k-next").textContent = next.dl.date;
+      document.getElementById("k-next-label").textContent = next.dl.label;
+    }
+    var steps = d.steps || [];
+    var done = steps.filter(function (s) { return s.status === "Done"; }).length;
+    document.getElementById("k-steps").textContent = done + " of " + steps.length;
+    var pct = steps.length ? Math.round(100 * done / steps.length) : 0;
+    document.getElementById("k-steps-bar").style.width = pct + "%";
+    document.getElementById("k-steps-bar-wrap").setAttribute("aria-valuenow", String(pct));
+    document.getElementById("k-open").textContent = String((d.openItems || []).length);
+    document.getElementById("k-settle").textContent = d.meta.settlementDate || "-";
+
+    document.getElementById("deadlines").innerHTML = (d.deadlines || []).map(function (dl) {
+      return '<li class="row"><div class="main"><div class="title">' + esc(dl.label) + '</div>' +
+        '<div class="muted small">' + esc(dl.note || "") + '</div></div>' +
+        '<span class="chip">' + esc(dl.date) + "</span></li>";
+    }).join("");
+
+    document.getElementById("people").innerHTML = (d.people || []).map(function (p) {
+      return '<li class="row"><div class="main"><div class="title">' + esc(p.name) + "</div>" +
+        '<div class="muted small">' + esc(p.role) + (p.org ? " - " + esc(p.org) : "") + "</div></div></li>";
+    }).join("");
+
+    document.getElementById("steps").innerHTML = steps.map(function (s) {
+      return '<li class="row"><div class="main"><div class="title">' + esc(s.title) + "</div>" +
+        '<div class="muted small">Owner: ' + esc(s.owner || "") + (s.dueNote ? " - " + esc(s.dueNote) : "") + "</div>" +
+        (s.note ? '<div class="small">' + esc(s.note) + "</div>" : "") + "</div>" +
+        '<span class="' + chipClass(s.status) + '">' + esc(s.status) + "</span></li>";
+    }).join("");
+
+    document.getElementById("documents").innerHTML = (d.documents || []).map(function (doc) {
+      var link = doc.link ? ' <a href="' + esc(doc.link) + '" target="_blank" rel="noopener">Open</a>' : "";
+      return '<li class="row"><div class="main"><div class="title">' + esc(doc.name) + link + "</div>" +
+        '<div class="muted small">' + esc(doc.detail || "") + (doc.note ? " " + esc(doc.note) : "") + "</div></div>" +
+        '<span class="' + chipClass(doc.status) + '">' + esc(doc.status) + "</span></li>";
+    }).join("");
+
+    document.getElementById("openitems").innerHTML = (d.openItems || []).map(function (it) {
+      return '<li class="row"><div class="main"><div class="title">' + esc(it.title) + "</div>" +
+        '<div class="small">' + esc(it.issue || "") + "</div>" +
+        '<div class="muted small">' + esc(it.path || "") + "</div></div></li>";
+    }).join("");
+
+    document.getElementById("foot").textContent =
+      "You are seeing the items tagged for you, plus the items shared with all parties. Last updated " +
+      (d.meta.lastUpdated || "") + ".";
+    app.hidden = false;
+  }
+
+  if (!session()) {
+    signedout.hidden = false;
+    return;
+  }
+  api("/api/session").then(function (res) {
+    if (!res.body || !res.body.ok) {
+      try { sessionStorage.removeItem(KEY); } catch (e) {}
+      signedout.hidden = false;
+      return;
+    }
+    var me = res.body.person;
+    return api("/api/dashboard").then(function (res2) {
+      if (!res2.body || !res2.body.ok) {
+        fatal.textContent = "We could not load the dashboard. Please sign in again.";
+        signedout.hidden = false;
+        return;
+      }
+      render(res2.body.dashboard, me);
+    });
+  }).catch(function () {
+    fatal.textContent = "We could not reach the dashboard service. Please try again.";
+    signedout.hidden = false;
+  });
+})();
+</script>
+</body>
+</html>
