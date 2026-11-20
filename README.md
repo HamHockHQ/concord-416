@@ -25,7 +25,8 @@ the static page renders only what the session-gated Worker returns.
 - The emailed link lands on a Worker confirm page; GET spends nothing
   (mail scanners are harmless). One tap on "Sign in as [first name]" redeems.
 - A new link invalidates the person's older unused links. Link generation
-  is capped at 5 per person per hour.
+  is capped at 5 per person per hour, except Matt (owner, tag "Matt"), who is
+  whitelisted at his instruction on 2026-11-20.
 - Sessions: 7 days for Matt, 24 hours for everyone else (config constants
   in worker.js: SESSION_TTL_MS). Auto-shutoff dates live in the same config
   (SHUTOFF) and are currently unset.

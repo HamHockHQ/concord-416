@@ -173,6 +173,7 @@ export class DashboardStore {
       steps: payload.steps.filter(vis),
       documents: payload.documents.filter(vis),
       openItems: payload.openItems.filter(vis),
+      flags: (payload.flags || []).filter(vis),
       viewer: { name: person.name, role: person.role, tag: person.tag },
     };
   }
@@ -253,7 +254,7 @@ export class DashboardStore {
           `SELECT COUNT(*) AS n FROM link_requests WHERE person_id = ? AND created_at > ?`,
           person.id, now - 60 * 60 * 1000
         )[0].n;
-        if (recent >= 1 || hourly >= 5) return generic; // rate-limited: no row, same response
+        if (person.tag !== "Matt" && (recent >= 1 || hourly >= 5)) return generic; // rate-limited: no row, same response. Matt (owner) is whitelisted per his 2026-11-20 instruction.
         this.sql.exec(
           `INSERT INTO link_requests (person_id, email, created_at) VALUES (?, ?, ?)`,
           person.id, norm, now
@@ -383,7 +384,7 @@ export class DashboardStore {
           `SELECT COUNT(*) AS n FROM auth_login_tokens WHERE person_id = ? AND created_at > ?`,
           person.id, now - 60 * 60 * 1000
         )[0].n;
-        if (hourly >= 5) return { ok: false, error: "rate limited: 5 links per hour" };
+        if (person.tag !== "Matt" && hourly >= 5) return { ok: false, error: "rate limited: 5 links per hour" }; // Matt (owner) is whitelisted per his 2026-11-20 instruction.
         // New link invalidates the person's outstanding unused links.
         this.sql.exec(
           `DELETE FROM auth_login_tokens WHERE person_id = ? AND used_at IS NULL`,

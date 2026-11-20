@@ -8,17 +8,37 @@ Builds an ALLOWLIST payload from:
   - ~/workspace/house-416-concord/closing-process/DASHBOARD_DATA.json
     (only the allowlisted meta fields below are read)
 
-The payload NEVER contains money data: the `funds` section, lender figures,
-and Matt's to-dos are excluded by construction (allowlist, not blocklist),
-and a guard scan refuses to publish if a forbidden marker appears in the
-serialized payload.
+The SHARED payload never contains money data: the `funds` section and
+Matt's to-dos are excluded by construction (allowlist, not blocklist),
+and a guard scan refuses to publish if a forbidden marker or any
+currency amount appears in the shared (scrubbed) part of the payload.
+
+MATT-ONLY LENDER SECTION (added 2026-11-20 at Matt's explicit request):
+data/lender_data.json is attached as the top-level `lender` key AFTER
+the shared part is scrubbed and guarded. It is never scrubbed and never
+part of the guard's shared blob. Server-side, the Worker's sliceFor
+returns the full payload only to Matt's session; every other person's
+payload is constructed from an allowlist (meta, deadlines, people,
+steps, documents, openItems, viewer) that has no `lender` key, so the
+lender figures never leave the server for a non-Matt session. The
+guard below fails the publish if any currency amount or lender figure
+shows up in the shared part, which is the only part a non-Matt slice
+can ever be built from.
 
 Usage: publish_dashboard.py [--dry-run]
 The admin token is read from /tmp/concord-416/token (never printed).
 """
 import json, os, sys, urllib.request, urllib.error
+from datetime import date
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import checks as flag_checks
+
+CONFLICTS = os.path.expanduser(
+    "~/workspace/house-416-concord/closing-process/CONFLICTS.md")
 
 SNAPSHOT = os.path.expanduser("~/workspace/concord-416/data/tracker_snapshot.json")
+LENDER_DATA = os.path.expanduser("~/workspace/concord-416/data/lender_data.json")
 DASHBOARD_DATA = os.path.expanduser(
     "~/workspace/house-416-concord/closing-process/DASHBOARD_DATA.json")
 TOKEN_FILE = "/tmp/concord-416/token"
@@ -76,19 +96,102 @@ def build_payload():
     }
     return payload
 
+import re
+
+CURRENCY_RE = re.compile(r"\$\s?\d[\d,]*(?:\.\d{2})?")
+PAREN_CURRENCY_RE = re.compile(r"\s*\(\$[\d,]+(?:\.\d{2})?\)")
+
+def scrub_text(s):
+    # External payload carries NO money figures at all (Matt instruction:
+    # money stays in his private tracker). Remove parenthetical amounts
+    # whole, blank any remaining currency amounts, and tidy the seams.
+    s = PAREN_CURRENCY_RE.sub("", s)
+    s = CURRENCY_RE.sub("", s)
+    s = re.sub(r"\bof\s+([.,]|$)", r"\1", s)
+    s = re.sub(r"\s{2,}", " ", s)
+    return s.strip()
+
+def scrub(obj):
+    if isinstance(obj, str):
+        return scrub_text(obj)
+    if isinstance(obj, list):
+        return [scrub(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: scrub(v) for k, v in obj.items()}
+    return obj
+
+# Distinctive lender-section markers and figures. None of these may
+# appear in the shared part of the payload: the shared part is the only
+# thing a non-Matt slice can be built from, so a hit here means lender
+# data would be exposed to other people. The lender section itself is
+# attached after this guard runs and is not scanned.
+LENDER_MARKERS = [
+    "cashToClose", "lifetimeInterest", "Lender breakdown",
+    "2738.71", "17217.7", "14758.94", "299245", "463249",
+]
+
 def guard(payload):
     blob = json.dumps(payload)
     hits = [m for m in FORBIDDEN_MARKERS if m in blob]
     if hits:
         raise SystemExit(f"REFUSING TO PUBLISH: forbidden markers in payload: {hits}")
+    lhits = [m for m in LENDER_MARKERS if m in blob]
+    if lhits:
+        raise SystemExit(f"REFUSING TO PUBLISH: lender markers in shared payload: {lhits}")
+    # Hard rule added 2026-11-20 after the persona verification found
+    # $308,500 and $3,000 in non-Matt slices: no currency amount may
+    # survive into the external payload, in any field.
+    cur = CURRENCY_RE.findall(blob)
+    if cur:
+        raise SystemExit(f"REFUSING TO PUBLISH: currency amounts in payload: {cur}")
+
+def load_lender():
+    with open(LENDER_DATA) as f:
+        return json.load(f)
 
 def main():
     dry = "--dry-run" in sys.argv
+    # Flagger: deterministic cross-reference checks over the raw sources.
+    # Shared flags are figure-free and join the shared payload before the
+    # scrub/guard pass; Matt-only flags ride inside the lender section.
+    with open(SNAPSHOT) as f:
+        snap_raw = json.load(f)
+    with open(DASHBOARD_DATA) as f:
+        dd_raw = json.load(f)
+    lender_pre = load_lender()
+    conflicts_text = ""
+    if os.path.exists(CONFLICTS):
+        with open(CONFLICTS) as f:
+            conflicts_text = f.read()
+    flags_shared, flags_matt = flag_checks.build_flags(
+        snap_raw, dd_raw, lender_pre, conflicts_text, date.today())
     payload = build_payload()
+    payload["flags"] = flags_shared
+    payload = scrub(payload)
     guard(payload)
+    # Matt-only lender section: attached after the shared part has been
+    # scrubbed and guarded, and verified to exist ONLY under the
+    # top-level `lender` key, which non-Matt slices never receive.
+    lender = load_lender()
+    lender["flags"] = flags_matt
+    def keys_of(obj, acc):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                acc.add(k); keys_of(v, acc)
+        elif isinstance(obj, list):
+            for x in obj:
+                keys_of(x, acc)
+        return acc
+    bad_keys = keys_of(payload, set()) & {"lender", "cashToClose", "lifetimeInterest", "offers", "scenarios"}
+    if bad_keys:
+        raise SystemExit(f"REFUSING TO PUBLISH: lender keys in shared payload: {sorted(bad_keys)}")
+    payload["lender"] = lender
     print(f"payload: {len(json.dumps(payload))} bytes, "
           f"{len(payload['steps'])} steps, {len(payload['documents'])} documents, "
-          f"{len(payload['openItems'])} open items, {len(payload['people'])} people")
+          f"{len(payload['openItems'])} open items, {len(payload['people'])} people, "
+          f"lender section {len(json.dumps(lender))} bytes (Matt slice only), "
+          f"flags: {len(flags_shared)} shared, {len(flags_matt)} Matt-only "
+          f"({', '.join(f['id'] for f in flags_shared + flags_matt)})")
     if dry:
         print("dry run: not sent")
         return

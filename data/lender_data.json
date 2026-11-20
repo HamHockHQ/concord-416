@@ -1,0 +1,278 @@
+{
+ "asOf": "2026-11-20",
+ "cashAvailableDefault": 19900,
+ "price": 308500,
+ "scenarios": {
+  "3": {
+   "downPayment": 9255,
+   "insuranceMonthly": 125,
+   "label": "3% down: Nov 20, 2026 reruns on the verified taxes",
+   "loan": 299245,
+   "note": "Current offers. Both lenders reran at 3% down on the verified taxes ($430.83/mo) on Nov 20, 2026. Pre-application estimates, not official Loan Estimates.",
+   "offers": [
+    {
+     "apr": 7.922,
+     "cashToClose": 17217.7,
+     "components": {
+      "credits": [
+       {
+        "amount": 299245,
+        "label": "Loan amount"
+       },
+       {
+        "amount": 9255,
+        "label": "Seller credit"
+       }
+      ],
+      "statedCash": 17217.7,
+      "statedTotalCredits": 308500.0,
+      "totalCosts": 325717.7
+     },
+     "contact": "Jim Rossiter / Paul Guensch",
+     "date": "Nov 20, 2026",
+     "detail": "Lender fees $1,695. No assistance program modeled in this estimate.",
+     "id": "movement3",
+     "lender": "Movement",
+     "lifetimeInterest": 463249.4,
+     "mi": 64.84,
+     "monthly": 2738.71,
+     "name": "Movement",
+     "pi": 2118.04,
+     "rate": 7.625
+    },
+    {
+     "apr": 7.724,
+     "cashToClose": 16237.65,
+     "components": {
+      "credits": [
+       {
+        "amount": 299245,
+        "label": "Loan amount"
+       },
+       {
+        "amount": 9255,
+        "label": "Seller credit"
+       },
+       {
+        "amount": 374.06,
+        "label": "Origination credit"
+       },
+       {
+        "amount": 500,
+        "label": "First-time buyer credit"
+       }
+      ],
+      "statedCash": 16237.65,
+      "statedTotalCredits": 309374.06,
+      "totalCosts": 325611.71
+     },
+     "contact": "Sam Totoro",
+     "date": "Nov 20, 2026",
+     "detail": "No discount points. Origination fee $1,195, origination credit $374.06.",
+     "id": "univest1-3",
+     "lender": "Univest",
+     "lifetimeInterest": 444806.6,
+     "mi": 77.3,
+     "monthly": 2699.94,
+     "name": "Univest Worksheet 1",
+     "pi": 2066.81,
+     "rate": 7.375
+    },
+    {
+     "apr": 7.852,
+     "cashToClose": 14758.94,
+     "components": {
+      "credits": [
+       {
+        "amount": 299245,
+        "label": "Loan amount"
+       },
+       {
+        "amount": 9255,
+        "label": "Seller credit"
+       },
+       {
+        "amount": 1870.28,
+        "label": "Origination credit"
+       },
+       {
+        "amount": 500,
+        "label": "First-time buyer credit"
+       }
+      ],
+      "statedCash": 14758.94,
+      "statedTotalCredits": 310870.28,
+      "totalCosts": 325629.22
+     },
+     "contact": "Sam Totoro",
+     "date": "Nov 20, 2026",
+     "detail": "No discount points. Origination fee $1,195, origination credit $1,870.28.",
+     "id": "univest2-3",
+     "lender": "Univest",
+     "lifetimeInterest": 454004.6,
+     "mi": 77.3,
+     "monthly": 2725.49,
+     "name": "Univest Worksheet 2",
+     "pi": 2092.36,
+     "rate": 7.5
+    }
+   ],
+   "taxesMonthly": 430.83
+  },
+  "5": {
+   "downPayment": 15425,
+   "insuranceMonthly": 125,
+   "label": "5% down: Nov 19, 2026 quotes (earlier)",
+   "loan": 293075,
+   "note": "Earlier quotes, Nov 19, 2026. Both were built on $320/mo taxes (Zillow), not the verified $430.83/mo, so monthly totals run about $111/mo low and cash figures miss roughly $1,443 of added tax escrow. Univest cash figures are the corrected ones: the $500 first-time buyer credit was double-counted on the worksheets (stated $21,505.39 and $20,057.01). Movement's stated cash is $21,932.72; on the real settlement date it computes to about $22,300 (computed, unverified read). Interest over the hold period is computed from rate and loan for this scenario.",
+   "offers": [
+    {
+     "apr": 7.858,
+     "cashToClose": 21932.72,
+     "components": {
+      "credits": [
+       {
+        "amount": 293075,
+        "label": "Loan amount"
+       },
+       {
+        "amount": 9255,
+        "label": "Seller credit"
+       }
+      ],
+      "statedCash": 21932.72,
+      "statedTotalCredits": 302330.0,
+      "totalCosts": 324262.72
+     },
+     "contact": "Jim Rossiter / Paul Guensch",
+     "date": "Nov 19, 2026",
+     "detail": "Lender fees $1,695. Stated cash to close; see scenario note.",
+     "id": "movement5",
+     "lender": "Movement",
+     "lifetimeInterest": null,
+     "mi": 43.96,
+     "monthly": 2563.33,
+     "name": "Movement",
+     "pi": 2074.37,
+     "rate": 7.625
+    },
+    {
+     "apr": 7.678,
+     "cashToClose": 22005.39,
+     "components": {
+      "credits": [
+       {
+        "amount": 293075,
+        "label": "Loan amount"
+       },
+       {
+        "amount": 9255,
+        "label": "Seller credit"
+       },
+       {
+        "amount": 500,
+        "label": "First-time buyer credit"
+       }
+      ],
+      "statedCash": 21505.39,
+      "statedTotalCredits": 303330.0,
+      "totalCosts": 324835.39
+     },
+     "contact": "Sam Totoro",
+     "date": "Nov 19, 2026",
+     "detail": "Discount points $732.69. Cash figure is the corrected one (see scenario note).",
+     "id": "univest1-5",
+     "lender": "Univest",
+     "lifetimeInterest": null,
+     "mi": 53.73,
+     "monthly": 2522.93,
+     "name": "Univest Option 1",
+     "pi": 2024.2,
+     "rate": 7.375
+    },
+    {
+     "apr": 7.78,
+     "cashToClose": 20557.01,
+     "components": {
+      "credits": [
+       {
+        "amount": 293075,
+        "label": "Loan amount"
+       },
+       {
+        "amount": 9255,
+        "label": "Seller credit"
+       },
+       {
+        "amount": 732.69,
+        "label": "Lender credit"
+       },
+       {
+        "amount": 500,
+        "label": "First-time buyer credit"
+       }
+      ],
+      "statedCash": 20057.01,
+      "statedTotalCredits": 304062.69,
+      "totalCosts": 324119.7
+     },
+     "contact": "Sam Totoro",
+     "date": "Nov 19, 2026",
+     "detail": "Lender credit $732.69, no discount points. Cash figure is the corrected one (see scenario note).",
+     "id": "univest2-5",
+     "lender": "Univest",
+     "lifetimeInterest": null,
+     "mi": 53.73,
+     "monthly": 2547.95,
+     "name": "Univest Option 2",
+     "pi": 2049.22,
+     "rate": 7.5
+    }
+   ],
+   "taxesMonthly": 320
+  }
+ },
+ "source": "closing-process/LENDER_COMPARISON.md and TIMELINE.md, figures extracted and cross-checked 2026-11-20",
+ "waiting": [
+  {
+   "asked": "Nov 20, 2026: Matt told Paul the PHFA Keystone income limit for Lancaster is $109,200 and he is at about $110,200, just over; asked which first mortgage the 7.25% sits on and for a Loan Estimate at 3% down if he qualifies.",
+   "expected": "Paul replied Nov 20, 2:25 PM ET: \"We are looking at a different program for you in lieu of the KFIT program. As soon as we have something we'll send it over.\" No name, rate, or terms yet. DU/LP approval with assistance attached is also still unanswered.",
+   "item": "Replacement assistance program (K-FIT does not apply)",
+   "lender": "Movement",
+   "owner": "Paul Guensch / Jim Rossiter (Movement)",
+   "status": "Waiting"
+  },
+  {
+   "asked": "Jim emailed Nov 20, 2:29 PM ET: \"I'll call you in a few hours. Sorry, I'm at a work event today.\"",
+   "expected": "Evening of Friday, Nov 20, 2026.",
+   "item": "Call from Jim Rossiter",
+   "lender": "Movement",
+   "owner": "Jim Rossiter (Movement)",
+   "status": "Expected"
+  },
+  {
+   "asked": "Nov 20, 2026 worksheet request: extend the preapproval past Nov 20 and confirm whether a new credit pull is needed.",
+   "expected": "Answered Nov 20, 12:15 PM ET: the preapproval can be extended once Movement repulls credit; the report on file is expired, so a new credit pull is needed.",
+   "item": "Preapproval extension and credit pull",
+   "lender": "Movement",
+   "owner": "Paul Guensch (Movement)",
+   "status": "Answered"
+  },
+  {
+   "asked": "Nov 20, 2026, 11:38 AM ET: email with a pre-filled worksheet, asking for the 3% rerun on $430.83/mo taxes, the $500 credit check, and the duplicate $300 title endorsement check.",
+   "expected": "Received Nov 20, 2:04 PM ET: Worksheets 1 and 2 (the current offers above); the $500 credit is counted once on both, fixed. Nothing outstanding from Sam.",
+   "item": "3% down worksheets on the verified taxes",
+   "lender": "Univest",
+   "owner": "Sam Totoro (Univest)",
+   "status": "Received"
+  },
+  {
+   "asked": "Both lenders were told the decision lands Monday and the application follows by Wednesday, Nov 25.",
+   "expected": "Decision Monday, Nov 23, 2026. Carole drafts the contract amendment to 3% down (and the lender name, if Univest wins) once the decision is made.",
+   "item": "Lender decision",
+   "lender": "Both",
+   "owner": "Matt",
+   "status": "Scheduled"
+  }
+ ]
+}

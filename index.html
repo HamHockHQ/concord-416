@@ -21,6 +21,7 @@
     --shadow: 0 8px 30px rgba(0,0,0,.07);
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -53,17 +54,61 @@
   }
   .btn.secondary { background: var(--gray-chip); color: var(--ink); width: auto; margin-top: 0; }
 
-  /* header */
+  /* app shell: slim header + left rail menu (desktop) / bottom bar (phone) */
+  .shell-top { padding: 2px 0 10px; }
+  .shell-body { display: grid; grid-template-columns: 216px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .panels { min-width: 0; }
   header.top {
-    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-    justify-content: space-between; margin-bottom: 16px;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    justify-content: space-between;
   }
+  header.top h1 { font-size: 20px; margin: 0; }
+  header.top .muted.small { margin: 2px 0 0; }
   .who { display: flex; align-items: center; gap: 10px; }
+  .who .btn.secondary { min-height: 40px; padding: 8px 14px; font-size: 14px; }
   .avatar {
-    width: 42px; height: 42px; border-radius: 50%; background: #D63A2A;
+    width: 36px; height: 36px; border-radius: 50%; background: #D63A2A;
     color: #fff; display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 16px;
+    font-weight: 700; font-size: 14px; flex: none;
   }
+  .tabwrap { position: sticky; top: 16px; }
+  .tabbar {
+    display: flex; flex-direction: column; gap: 4px; background: var(--card); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 6px;
+  }
+  .tabbar [role="tab"] {
+    flex: none; text-align: left; border: 0; background: transparent; cursor: pointer; font: inherit;
+    font-size: 14px; font-weight: 600; color: var(--muted);
+    min-height: 44px; padding: 10px 14px; border-radius: 10px; white-space: nowrap;
+  }
+  .tabbar [role="tab"][aria-selected="true"] { background: var(--accent-dark); color: #fff; }
+  .tab-short { display: none; }
+  .tab-pill {
+    display: inline-block; background: var(--peach); color: #8a2a1c;
+    font-size: 11px; font-weight: 700; border-radius: 999px;
+    padding: 1px 7px; margin-left: 5px; vertical-align: 1px;
+  }
+  .tabbar [role="tab"][aria-selected="true"] .tab-pill { background: #fff; color: var(--accent-dark); }
+  /* preview-as (Matt only) */
+  .previewbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .previewbar label { font-size: 13px; font-weight: 600; }
+  .previewbar select {
+    font: inherit; font-size: 14px; padding: 9px 10px; border-radius: 10px;
+    border: 1px solid #cfcfcb; min-height: 44px; background: #fff; color: var(--ink);
+  }
+  .preview-banner {
+    background: var(--peach); color: #8a2a1c; border-radius: 12px; padding: 10px 14px;
+    display: flex; gap: 10px; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; font-size: 14px;
+  }
+  .preview-banner button {
+    border: 0; background: var(--accent-dark); color: #fff; font: inherit; font-weight: 600;
+    font-size: 13px; padding: 8px 14px; border-radius: 999px; cursor: pointer; min-height: 38px; flex: none;
+  }
+
+  .panel { padding-top: 4px; }
+  .panel:focus { outline: none; }
+  .panel:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
 
   /* KPI row */
   .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
@@ -89,16 +134,156 @@
   }
   .chip.done { background: var(--mint); color: var(--mint-ink); }
   .chip.waiting { background: var(--peach); color: #8a2a1c; }
+  .chip.conflict { background: var(--accent-dark); color: #fff; }
   .chip.needed { background: var(--peach); color: #8a2a1c; }
   .progress { height: 8px; border-radius: 999px; background: var(--gray-chip); overflow: hidden; margin-top: 10px; }
   .progress > div { height: 100%; background: var(--accent); }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .grid2 > .card { margin-bottom: 0; }
-  .sectiongrid { display: grid; grid-template-columns: 1fr; gap: 0; }
+
+  /* card header with controls */
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .card-head h2 { margin: 0; }
+  .viewtoggle { display: inline-flex; background: var(--gray-chip); border-radius: 999px; padding: 3px; }
+  .viewtoggle button {
+    border: 0; background: transparent; cursor: pointer; font: inherit;
+    font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 999px; color: var(--ink);
+    min-height: 38px;
+  }
+  .viewtoggle button[aria-pressed="true"] { background: var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+
+  /* filter chips */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .fchip {
+    border: 0; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600;
+    background: var(--gray-chip); color: var(--ink); border-radius: 999px;
+    padding: 8px 14px; min-height: 38px;
+  }
+  .fchip[aria-pressed="true"] { background: var(--accent-dark); color: #fff; }
+
+  /* expandable rows (deadlines list, steps, documents, up-next) */
+  li.xitem { border-bottom: 1px solid #eee; }
+  li.xitem:last-child { border-bottom: 0; }
+  .xbtn {
+    display: flex; gap: 12px; align-items: flex-start; width: 100%;
+    background: none; border: 0; cursor: pointer; font: inherit; color: inherit;
+    text-align: left; padding: 12px 0; min-height: 48px;
+  }
+  .xbtn .main { flex: 1; min-width: 0; }
+  .xbtn .title { display: block; font-weight: 600; }
+  .xbtn .sub { display: block; margin-top: 2px; }
+  .chev { flex: none; color: var(--muted); font-size: 14px; line-height: 1.5; transition: transform .15s ease; }
+  .xbtn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .xdetail { padding: 0 0 14px; }
+  .xdetail p { margin: 0 0 6px; }
+  .xdetail p:last-child { margin-bottom: 0; }
+
+  /* horizontal timeline */
+  .tl-scroll { overflow-x: auto; padding: 4px 2px 2px; -webkit-overflow-scrolling: touch; }
+  .tl-inner { position: relative; height: 108px; }
+  .tl-track { position: absolute; left: 0; right: 0; top: 43px; height: 3px; background: #e3e1de; border-radius: 999px; }
+  .tl-tick {
+    position: absolute; bottom: 0; transform: translateX(-50%);
+    font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
+  }
+  .tl-today { position: absolute; top: 0; bottom: 16px; border-left: 2px dashed var(--accent-dark); }
+  .tl-today span {
+    position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+    background: var(--accent-dark); color: #fff; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+  }
+  .tl-point {
+    position: absolute; top: 0; width: 88px; margin-left: -44px; height: 92px;
+    display: flex; flex-direction: column; align-items: center;
+    background: none; border: 0; cursor: pointer; font: inherit; color: inherit; padding: 0 2px;
+  }
+  .tl-slot { height: 34px; display: flex; align-items: flex-end; justify-content: center; text-align: center; overflow: hidden; }
+  .tl-slot.below { align-items: flex-start; }
+  .tl-dotwrap { height: 20px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .tl-dot {
+    width: 14px; height: 14px; border-radius: 50%; background: var(--accent);
+    border: 3px solid #fff; box-shadow: 0 0 0 2px var(--accent);
+  }
+  .tl-point.past .tl-dot { background: #b9b7b2; box-shadow: 0 0 0 2px #b9b7b2; }
+  .tl-point.past .tl-name { color: var(--muted); font-weight: 500; }
+  .tl-point.next .tl-dot { box-shadow: 0 0 0 2px var(--accent), 0 0 0 6px var(--peach); }
+  .tl-point.selected .tl-dot { background: var(--accent-dark); box-shadow: 0 0 0 3px var(--accent-dark); transform: scale(1.2); }
+  .tl-name { font-size: 11px; font-weight: 600; line-height: 1.25; }
+  .tl-date { font-size: 11px; color: var(--muted); }
+  .tl-detail { border-top: 1px solid #eee; margin-top: 10px; padding-top: 12px; }
+  .tl-detail p { margin: 0 0 6px; }
+  .tl-detail p:last-child { margin-bottom: 0; }
+
+  /* calendar */
+  .cal-month { margin-bottom: 18px; }
+  .cal-month:last-child { margin-bottom: 6px; }
+  .cal-month h3 { font-size: 15px; margin: 0 0 8px; font-weight: 650; }
+  table.cal { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table.cal th { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 4px 0; }
+  table.cal th abbr { text-decoration: none; }
+  table.cal td { text-align: center; padding: 2px; vertical-align: middle; }
+  .cal-day {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 50%; font-size: 14px; color: var(--ink);
+  }
+  span.cal-day { color: var(--muted); }
+  button.cal-day { border: 0; background: var(--peach); cursor: pointer; font: inherit; font-weight: 650; position: relative; }
+  button.cal-day .dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--accent-dark); }
+  .cal-day.today { box-shadow: inset 0 0 0 2px var(--accent-dark); }
+  button.cal-day.selected { background: var(--accent-dark); color: #fff; }
+  button.cal-day.selected .dot { background: #fff; }
+  .cal-detail { border-top: 1px solid #eee; padding-top: 12px; margin-top: 4px; }
+  .cal-detail p { margin: 0 0 6px; }
+  .cal-detail p:last-child { margin-bottom: 0; }
+
+  /* lender breakdown (Matt slice only; rendered only when the payload carries it) */
+  .lend-controls { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 6px; }
+  .ctl-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+  .lend-controls label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+  .lend-controls input[type="number"] {
+    font: inherit; font-size: 15px; padding: 9px 10px; border: 1px solid #cfcfcb;
+    border-radius: 10px; min-height: 42px; width: 150px;
+  }
+  .lend-table-wrap { overflow-x: auto; }
+  table.lend { width: 100%; border-collapse: collapse; min-width: 540px; }
+  table.lend th, table.lend td { text-align: right; padding: 9px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+  table.lend th:first-child, table.lend td:first-child { text-align: left; }
+  table.lend thead .sub { display: block; font-size: 12px; color: var(--muted); font-weight: 500; }
+  table.lend td.best { font-weight: 700; }
+  table.lend tr.total td { font-weight: 700; border-top: 2px solid #e3e1de; }
+  table.lend td.neg { color: var(--accent-dark); font-weight: 700; }
+  .chart { margin-bottom: 18px; }
+  .chart:last-child { margin-bottom: 4px; }
+  .chart h3 { font-size: 14px; margin: 0 0 8px; font-weight: 650; }
+  .bar-row { display: grid; grid-template-columns: 118px 1fr 96px; gap: 10px; align-items: center; margin-bottom: 6px; font-size: 13px; }
+  .bar-track { background: var(--gray-chip); border-radius: 999px; height: 16px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 999px; }
+  .bar-row.best .bar-fill { background: var(--accent-dark); }
+  .bar-row .bar-val { text-align: right; font-weight: 650; }
+  .bar-row .bar-name { color: var(--muted); }
+  .bar-row.best .bar-name { color: var(--ink); font-weight: 600; }
+
   @media (max-width: 760px) {
+    .shell-body { display: block; }
+    .shell-top { position: sticky; top: 0; z-index: 15; background: var(--bg); }
     .kpis { grid-template-columns: 1fr 1fr; }
-    .grid2 { grid-template-columns: 1fr; }
     h1 { font-size: 22px; }
+    header.top h1 { font-size: 18px; }
+    /* Casey rule from the critique: primary navigation lives in the thumb zone. */
+    .tabwrap {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin-top: 0;
+      background: rgba(255,255,255,.98); box-shadow: 0 -4px 20px rgba(0,0,0,.10);
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    }
+    .tabbar { box-shadow: none; padding: 2px; background: transparent; flex-direction: row; }
+    .tabbar [role="tab"] { flex: 1 1 0; text-align: center; font-size: 11px; min-height: 48px; padding: 6px 2px; }
+    .tab-long { display: none; }
+    .tab-short { display: inline; }
+    .tab-pill { margin-left: 3px; padding: 0 5px; }
+    .wrap { padding-bottom: 104px; }
+    .who .viewer-meta { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .chev, .tl-dot { transition: none; }
   }
 </style>
 </head>
@@ -119,73 +304,200 @@
     </div>
   </main>
 
-  <!-- Signed-in view: rendered from the session-gated API. -->
+  <!-- Signed-in view: an app shell. One section (tab panel) in view at a
+       time; everything renders from the session-gated API payload, which
+       contains only the signed-in person's slice. -->
   <main id="app" hidden>
-    <header class="top">
-      <div>
-        <h1 id="addr">Closing Tracker</h1>
-        <p class="muted small" id="subtitle"></p>
-      </div>
-      <div class="who">
-        <div class="avatar" id="avatar" aria-hidden="true"></div>
+    <div class="shell-top">
+      <header class="top">
         <div>
-          <div id="viewername" style="font-weight:650"></div>
-          <div class="muted small" id="viewerrole"></div>
+          <h1 id="addr">Closing Tracker</h1>
+          <p class="muted small" id="subtitle"></p>
         </div>
-        <button class="btn secondary" id="signout" type="button">Sign out</button>
+        <div class="who">
+          <div class="avatar" id="avatar" aria-hidden="true"></div>
+          <div class="viewer-meta">
+            <div id="viewername" style="font-weight:650"></div>
+            <div class="muted small" id="viewerrole"></div>
+          </div>
+          <button class="btn secondary" id="signout" type="button">Sign out</button>
+        </div>
+      </header>
+      <div class="previewbar" id="previewbar" hidden>
+        <label for="preview-select">Preview as</label>
+        <select id="preview-select">
+          <option value="self">Your view (Matt Howard)</option>
+          <option value="carole">Carole Kirchner, buyer's agent</option>
+          <option value="jim">Jim Rossiter, Movement lender</option>
+          <option value="sam">Sam Totoro, Univest lender</option>
+          <option value="seller">Julie Peteritas, seller side</option>
+          <option value="title">Sarah Tompos, title</option>
+        </select>
       </div>
-    </header>
+    </div>
 
-    <section class="kpis" aria-label="Key dates and progress">
-      <div class="kpi coral">
-        <div class="label">Next deadline</div>
-        <div class="value" id="k-next">-</div>
-        <div class="small" id="k-next-label"></div>
-      </div>
-      <div class="kpi">
-        <div class="label">Steps done</div>
-        <div class="value" id="k-steps">-</div>
-        <div class="progress" role="progressbar" aria-label="Steps completed" id="k-steps-bar-wrap">
-          <div id="k-steps-bar" style="width:0%"></div>
+    <div class="shell-body">
+      <div class="tabwrap">
+        <div class="tabbar" id="tablist" role="tablist" aria-label="Dashboard sections">
+          <button type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true">Overview</button>
+          <button type="button" role="tab" id="tab-lenders" aria-controls="panel-lenders" aria-selected="false" tabindex="-1" hidden>Lenders</button>
+          <button type="button" role="tab" id="tab-deadlines" aria-controls="panel-deadlines" aria-selected="false" tabindex="-1">Deadlines</button>
+          <button type="button" role="tab" id="tab-steps" aria-controls="panel-steps" aria-selected="false" tabindex="-1">Steps</button>
+          <button type="button" role="tab" id="tab-documents" aria-controls="panel-documents" aria-selected="false" tabindex="-1"><span class="tab-long">Documents</span><span class="tab-short">Docs</span></button>
+          <button type="button" role="tab" id="tab-open" aria-controls="panel-open" aria-selected="false" tabindex="-1"><span class="tab-long">Open items</span><span class="tab-short">Items</span><span class="tab-pill" id="tab-open-count" hidden></span></button>
+          <button type="button" role="tab" id="tab-people" aria-controls="panel-people" aria-selected="false" tabindex="-1">People</button>
+          <button type="button" role="tab" id="tab-flags" aria-controls="panel-flags" aria-selected="false" tabindex="-1">Flags<span class="tab-pill" id="tab-flags-count" hidden></span></button>
         </div>
       </div>
-      <div class="kpi">
-        <div class="label">Open items for you</div>
-        <div class="value" id="k-open">-</div>
+
+      <div class="panels">
+      <div class="preview-banner" id="preview-banner" hidden>
+        <span id="preview-banner-text"></span>
+        <button type="button" id="preview-exit">Exit preview</button>
       </div>
-      <div class="kpi">
-        <div class="label">Settlement</div>
-        <div class="value" id="k-settle">-</div>
-      </div>
+
+    <section class="panel" role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
+      <section class="kpis" aria-label="Key dates and progress">
+        <div class="kpi coral">
+          <div class="label">Next deadline</div>
+          <div class="value" id="k-next">-</div>
+          <div class="small" id="k-next-label"></div>
+        </div>
+        <div class="kpi">
+          <div class="label">Steps done</div>
+          <div class="value" id="k-steps">-</div>
+          <div class="progress" role="progressbar" aria-label="Steps completed" id="k-steps-bar-wrap">
+            <div id="k-steps-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="label">Open items for you</div>
+          <div class="value" id="k-open">-</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Settlement</div>
+          <div class="value" id="k-settle">-</div>
+        </div>
+      </section>
+      <section class="card" aria-labelledby="h-upnext">
+        <h2 id="h-upnext">Up next</h2>
+        <ul class="clean" id="upnext"></ul>
+      </section>
+      <p class="muted small" id="foot"></p>
     </section>
 
-    <div class="grid2">
+    <section class="panel" role="tabpanel" id="panel-deadlines" aria-labelledby="tab-deadlines" tabindex="0" hidden>
       <section class="card" aria-labelledby="h-deadlines">
-        <h2 id="h-deadlines">Deadlines</h2>
-        <ul class="clean" id="deadlines"></ul>
+        <div class="card-head">
+          <h2 id="h-deadlines">Deadlines</h2>
+          <div class="viewtoggle" role="group" aria-label="Deadlines view">
+            <button type="button" id="dl-view-timeline" aria-pressed="true">Timeline</button>
+            <button type="button" id="dl-view-list" aria-pressed="false">List</button>
+            <button type="button" id="dl-view-cal" aria-pressed="false">Calendar</button>
+          </div>
+        </div>
+        <div id="dl-tl-wrap">
+          <div class="tl-scroll" id="tl-scroll">
+            <div class="tl-inner" id="tl-inner"></div>
+          </div>
+          <div class="tl-detail" id="tl-detail" role="region" aria-label="Deadline detail" aria-live="polite"></div>
+        </div>
+        <div id="dl-list-wrap" hidden>
+          <ul class="clean" id="deadlines"></ul>
+        </div>
+        <div id="dl-cal-wrap" hidden>
+          <div id="cal-months"></div>
+          <div class="cal-detail" id="cal-detail" role="region" aria-label="Selected deadline details" aria-live="polite">
+            <p class="muted small">Tap a highlighted date to see its deadline.</p>
+          </div>
+        </div>
       </section>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-steps" aria-labelledby="tab-steps" tabindex="0" hidden>
+      <section class="card" aria-labelledby="h-steps">
+        <h2 id="h-steps">Steps</h2>
+        <div class="filters" id="steps-filters" role="group" aria-label="Filter steps by status"></div>
+        <ul class="clean" id="steps"></ul>
+        <p class="muted small" id="steps-empty" hidden>No steps with this status in your view.</p>
+      </section>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-documents" aria-labelledby="tab-documents" tabindex="0" hidden>
+      <section class="card" aria-labelledby="h-docs">
+        <h2 id="h-docs">Documents</h2>
+        <div class="filters" id="docs-filters" role="group" aria-label="Filter documents by status"></div>
+        <ul class="clean" id="documents"></ul>
+        <p class="muted small" id="docs-empty" hidden>No documents with this status in your view.</p>
+      </section>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-open" aria-labelledby="tab-open" tabindex="0" hidden>
+      <section class="card" aria-labelledby="h-open">
+        <h2 id="h-open">Open items</h2>
+        <ul class="clean" id="openitems"></ul>
+      </section>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-people" aria-labelledby="tab-people" tabindex="0" hidden>
       <section class="card" aria-labelledby="h-people">
         <h2 id="h-people">People on this purchase</h2>
         <ul class="clean" id="people"></ul>
       </section>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-flags" aria-labelledby="tab-flags" tabindex="0" hidden>
+      <section class="card" aria-labelledby="h-flags">
+        <h2 id="h-flags">Flags</h2>
+        <p class="muted small">Automatic cross-checks of the closing record, the lender worksheets, and the conflicts register. A flag clears on the next publish once the source data agrees.</p>
+        <ul class="clean" id="flags"></ul>
+        <p class="muted small" id="flags-empty" hidden>No flags right now. Everything cross-checks.</p>
+      </section>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-lenders" aria-labelledby="tab-lenders" tabindex="0" hidden>
+      <section class="card" aria-labelledby="h-lenders">
+        <h2 id="h-lenders">Lender breakdown</h2>
+        <p class="muted small" id="lend-asof"></p>
+        <div class="lend-controls">
+          <div class="ctl">
+            <span class="ctl-label" id="lend-dp-label">Down payment</span>
+            <div class="viewtoggle" role="group" aria-labelledby="lend-dp-label">
+              <button type="button" id="lend-dp-3" aria-pressed="true">3% down</button>
+              <button type="button" id="lend-dp-5" aria-pressed="false">5% down</button>
+            </div>
+          </div>
+          <div class="ctl">
+            <span class="ctl-label" id="lend-hold-label">Interest horizon</span>
+            <div class="viewtoggle" role="group" aria-labelledby="lend-hold-label">
+              <button type="button" id="lend-hold-30" aria-pressed="true">30 years</button>
+              <button type="button" id="lend-hold-7" aria-pressed="false">7 years</button>
+            </div>
+          </div>
+          <div class="ctl">
+            <label for="lend-cash">Cash available</label>
+            <input type="number" id="lend-cash" inputmode="decimal" min="0" step="100" value="19900">
+          </div>
+        </div>
+        <p class="small" id="lend-scenario-note"></p>
+        <div class="lend-table-wrap"><table class="lend" id="lend-table"></table></div>
+        <p class="muted small">Figures are the lenders' own pre-application estimates, not official Loan Estimates. Anything marked computed is calculated here from the quoted rate and loan amount; it is not a lender quote.</p>
+      </section>
+      <section class="card" aria-labelledby="h-lend-charts">
+        <h2 id="h-lend-charts">Side by side</h2>
+        <div id="lend-charts"></div>
+      </section>
+      <section class="card" aria-labelledby="h-lend-waiting">
+        <h2 id="h-lend-waiting">Requested and waiting</h2>
+        <ul class="clean" id="lend-waiting"></ul>
+      </section>
+      <section class="card" aria-labelledby="h-lend-earlier">
+        <h2 id="h-lend-earlier">Earlier quotes</h2>
+        <ul class="clean" id="lend-earlier"></ul>
+      </section>
+    </section>
+      </div>
     </div>
-
-    <section class="card" aria-labelledby="h-steps" style="margin-top:16px">
-      <h2 id="h-steps">Steps</h2>
-      <ul class="clean" id="steps"></ul>
-    </section>
-
-    <section class="card" aria-labelledby="h-docs">
-      <h2 id="h-docs">Documents</h2>
-      <ul class="clean" id="documents"></ul>
-    </section>
-
-    <section class="card" aria-labelledby="h-open">
-      <h2 id="h-open">Open items</h2>
-      <ul class="clean" id="openitems"></ul>
-    </section>
-
-    <p class="muted small" id="foot"></p>
   </main>
 
   <p id="fatal" class="small" role="alert"></p>
@@ -257,24 +569,363 @@
     return "chip";
   }
 
-  function render(d, me) {
-    document.getElementById("addr").textContent = d.meta.address || "Closing Tracker";
-    document.getElementById("subtitle").textContent =
-      "Agreement executed " + (d.meta.executionDate || "") + " - shared closing dashboard";
-    document.getElementById("viewername").textContent = me.name;
-    document.getElementById("viewerrole").textContent = me.role;
-    document.getElementById("avatar").textContent =
-      me.name.split(" ").map(function (w) { return w[0]; }).slice(0, 2).join("");
+  /* ---------- shared state ---------- */
+  var fullData = null;       // the signed-in person's own payload (Matt's is full)
+  var sessionPerson = null;  // who actually signed in
+  var currentData = null;    // what is on screen (a preview slice while previewing)
+  var previewPerson = null;  // non-null while Matt previews someone else's view
+  var viewerTag = "";
+  var activeTabId = "overview";
+  var lendState = { dp: "3", hold: 30, cash: 19900 };
 
-    var now = new Date(); now.setHours(0, 0, 0, 0);
-    var next = null;
-    (d.deadlines || []).forEach(function (dl) {
-      var dt = new Date(dl.date);
-      if (!isNaN(dt) && dt >= now && (!next || dt < next.dt)) next = { dt: dt, dl: dl };
+  // Defense in depth for shared slices: the published payload is already
+  // scrubbed server-side, but a non-Matt view never renders a currency
+  // amount even if one ever slipped into a shared field.
+  function maybeScrub(text) {
+    var s = String(text == null ? "" : text);
+    if (viewerTag === "Matt") return s;
+    return s
+      .replace(/\s*\(\$[\d,]+(?:\.\d{2})?\)/g, "")
+      .replace(/\$\s?\d[\d,]*(?:\.\d{2})?/g, "")
+      .replace(/\s{2,}/g, " ");
+  }
+
+  /* ---------- tabs (app shell navigation) ---------- */
+  var allTabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function visibleTabs() { return allTabs.filter(function (t) { return !t.hidden; }); }
+  function activateTab(id, focus) {
+    var target = null;
+    visibleTabs().forEach(function (t) { if (t.id === "tab-" + id) target = t; });
+    if (!target) target = visibleTabs()[0];
+    allTabs.forEach(function (t) {
+      var on = t === target && !t.hidden;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      var p = document.getElementById(t.getAttribute("aria-controls"));
+      if (p) p.hidden = !on;
     });
+    activeTabId = target.id.replace("tab-", "");
+    if (focus) target.focus();
+    window.scrollTo(0, 0);
+  }
+  allTabs.forEach(function (t) {
+    t.addEventListener("click", function () { activateTab(t.id.replace("tab-", "")); });
+  });
+  document.getElementById("tablist").addEventListener("keydown", function (ev) {
+    var vt = visibleTabs();
+    var cur = vt.indexOf(document.activeElement);
+    if (cur === -1) return;
+    var n = null;
+    if (ev.key === "ArrowRight" || ev.key === "ArrowDown") n = (cur + 1) % vt.length;
+    else if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") n = (cur - 1 + vt.length) % vt.length;
+    else if (ev.key === "Home") n = 0;
+    else if (ev.key === "End") n = vt.length - 1;
+    if (n !== null) { ev.preventDefault(); activateTab(vt[n].id.replace("tab-", ""), true); }
+  });
+
+  /* ---------- expandable rows (delegated) ---------- */
+  app.addEventListener("click", function (ev) {
+    var btn = ev.target && ev.target.closest ? ev.target.closest(".xbtn") : null;
+    if (!btn || !app.contains(btn)) return;
+    var panel = document.getElementById(btn.getAttribute("aria-controls"));
+    var open = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", String(!open));
+    if (panel) panel.hidden = open;
+  });
+
+  /* ---------- deadlines: helpers ---------- */
+  function parseDay(str) {
+    var t = new Date(str);
+    if (isNaN(t)) return null;
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }
+  function dayKey(dt) {
+    return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+  }
+  function relText(dt) {
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var diff = Math.round((dt - today) / 86400000);
+    if (diff === 0) return "Today";
+    if (diff === 1) return "Tomorrow";
+    if (diff > 1) return "In " + diff + " days";
+    if (diff === -1) return "Yesterday";
+    return (-diff) + " days ago";
+  }
+  var DL_KEYWORDS = {
+    deposit: ["deposit"],
+    application: ["application"],
+    inspection: ["inspection"],
+    commitment: ["commitment"],
+    cd: ["closing disclosure"],
+    settlement: ["settlement"]
+  };
+  function matchStep(dl, steps) {
+    var kws = DL_KEYWORDS[dl.key] || [];
+    var best = null, bestLen = Infinity;
+    (steps || []).forEach(function (s) {
+      var t = String(s.title || "").toLowerCase();
+      for (var i = 0; i < kws.length; i++) {
+        if (t.indexOf(kws[i]) !== -1 && t.length < bestLen) { best = s; bestLen = t.length; }
+      }
+    });
+    return best;
+  }
+  function deadlineDetailHTML(dl) {
+    var steps = (currentData && currentData.steps) || [];
+    var parts = [];
+    var dt = parseDay(dl.date);
+    if (dt) {
+      var full = dt.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      parts.push('<p><strong>' + esc(full) + '</strong> <span class="muted">(' + esc(relText(dt)) + ')</span></p>');
+    }
+    if (dl.note) parts.push('<p class="small">' + esc(maybeScrub(dl.note)) + '</p>');
+    var s = matchStep(dl, steps);
+    if (s) {
+      var line = 'Related step: <strong>' + esc(maybeScrub(s.title)) + '</strong> - ' + esc(s.status);
+      if (s.dueNote) line += ' - ' + esc(maybeScrub(s.dueNote));
+      parts.push('<p class="small">' + line + '</p>');
+      if (s.owner) parts.push('<p class="muted small">Owner: ' + esc(maybeScrub(s.owner)) + '</p>');
+      if (s.note) parts.push('<p class="small">' + esc(maybeScrub(s.note)) + '</p>');
+    }
+    return parts.join("");
+  }
+  function dlKey(dl, i) { return dl.key || ("i" + i); }
+
+  /* ---------- deadlines: horizontal timeline ---------- */
+  function renderTimeline(d) {
+    var box = document.getElementById("tl-inner");
+    var items = (d.deadlines || []).map(function (dl, i) {
+      return { dl: dl, dt: parseDay(dl.date), k: dlKey(dl, i) };
+    }).filter(function (x) { return x.dt; });
+    if (!items.length) {
+      box.style.width = "";
+      box.innerHTML = '<p class="muted small" style="padding-top:12px">No deadlines in your view.</p>';
+      document.getElementById("tl-detail").innerHTML = "";
+      return;
+    }
+    var min = Math.min.apply(null, items.map(function (x) { return x.dt.getTime(); }));
+    var max = Math.max.apply(null, items.map(function (x) { return x.dt.getTime(); }));
+    var start = min - 3 * 86400000, end = max + 3 * 86400000;
+    var PX = 20;
+    var width = Math.max(Math.round((end - start) / 86400000) * PX, 340);
+    function leftPx(t) { return Math.round((t - start) / 86400000) * PX; }
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var nextItem = null;
+    items.forEach(function (x) { if (!nextItem && x.dt >= today) nextItem = x; });
+
+    var html = '<div class="tl-track" aria-hidden="true"></div>';
+    var tick = new Date(start); tick.setDate(1); tick.setHours(0, 0, 0, 0);
+    if (tick.getTime() < start) tick.setMonth(tick.getMonth() + 1);
+    while (tick.getTime() <= end) {
+      html += '<span class="tl-tick" style="left:' + leftPx(tick.getTime()) + 'px" aria-hidden="true">' +
+        esc(tick.toLocaleDateString("en-US", { month: "short" })) + '</span>';
+      tick.setMonth(tick.getMonth() + 1);
+    }
+    if (today.getTime() >= start && today.getTime() <= end) {
+      html += '<div class="tl-today" style="left:' + leftPx(today.getTime()) + 'px" aria-hidden="true"><span>Today</span></div>';
+    }
+    items.forEach(function (x, i) {
+      var past = x.dt < today;
+      var cls = "tl-point" + (past ? " past" : "") + (x === nextItem ? " next" : "");
+      var name = '<span class="tl-name">' + esc(maybeScrub(x.dl.label)) + '</span>';
+      var date = '<span class="tl-date">' + esc(x.dl.date) + '</span>';
+      var above = (i % 2 === 0) ? name : date;
+      var below = (i % 2 === 0) ? date : name;
+      var aria = maybeScrub(x.dl.label) + ", " +
+        x.dt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ", " + relText(x.dt);
+      html += '<button type="button" class="' + cls + '" data-dlkey="' + esc(x.k) + '" data-x="' + leftPx(x.dt.getTime()) +
+        '" style="left:' + leftPx(x.dt.getTime()) + 'px" aria-label="' + esc(aria) + '">' +
+        '<span class="tl-slot">' + above + '</span>' +
+        '<span class="tl-dotwrap"><span class="tl-dot" aria-hidden="true"></span></span>' +
+        '<span class="tl-slot below">' + below + '</span></button>';
+    });
+    box.style.width = width + "px";
+    box.innerHTML = html;
+    var sel = nextItem || items[items.length - 1];
+    selectTimelineDeadline(sel.k, false);
+    scrollTimelineTo(sel.k);
+  }
+  function scrollTimelineTo(k) {
+    var btn = document.querySelector('.tl-point[data-dlkey="' + k + '"]');
+    var scroller = document.getElementById("tl-scroll");
+    if (!btn || !scroller) return;
+    var x = parseInt(btn.getAttribute("data-x"), 10) || 0;
+    scroller.scrollLeft = Math.max(0, x - Math.round(scroller.clientWidth * 0.35));
+  }
+  function selectTimelineDeadline(k, scroll) {
+    if (!currentData) return;
+    var dl = null;
+    (currentData.deadlines || []).forEach(function (x, i) { if (dlKey(x, i) === k) dl = x; });
+    if (!dl) return;
+    document.querySelectorAll(".tl-point").forEach(function (b) {
+      var on = b.getAttribute("data-dlkey") === k;
+      b.classList.toggle("selected", on);
+      if (on) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    });
+    document.getElementById("tl-detail").innerHTML =
+      '<p><strong>' + esc(maybeScrub(dl.label)) + '</strong></p>' + deadlineDetailHTML(dl);
+    if (scroll) scrollTimelineTo(k);
+  }
+  document.getElementById("tl-inner").addEventListener("click", function (ev) {
+    var btn = ev.target && ev.target.closest ? ev.target.closest(".tl-point") : null;
+    if (btn) selectTimelineDeadline(btn.getAttribute("data-dlkey"), false);
+  });
+
+  /* ---------- deadlines: list + calendar ---------- */
+  function renderDeadlineList(d) {
+    document.getElementById("deadlines").innerHTML = (d.deadlines || []).map(function (dl, i) {
+      var id = "dl-detail-" + i;
+      return '<li class="xitem">' +
+        '<button type="button" class="xbtn" aria-expanded="false" aria-controls="' + id + '">' +
+        '<span class="main"><span class="title">' + esc(maybeScrub(dl.label)) + '</span>' +
+        '<span class="muted small sub">' + esc(maybeScrub(dl.note || "")) + '</span></span>' +
+        '<span class="chip">' + esc(dl.date) + '</span>' +
+        '<span class="chev" aria-hidden="true">&#9662;</span></button>' +
+        '<div class="xdetail" id="' + id + '" hidden>' + deadlineDetailHTML(dl) + '</div></li>';
+    }).join("");
+  }
+  function renderCalendar(d) {
+    var byDay = {};
+    (d.deadlines || []).forEach(function (dl) {
+      var dt = parseDay(dl.date);
+      if (dt) { var k = dayKey(dt); (byDay[k] = byDay[k] || []).push(dl); }
+    });
+    var todayK = dayKey(new Date());
+    var wd = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    var wdFull = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var months = [[2026, 10], [2026, 11], [2027, 0]];
+    var html = "";
+    months.forEach(function (ym) {
+      var y = ym[0], mo = ym[1];
+      var first = new Date(y, mo, 1);
+      var daysIn = new Date(y, mo + 1, 0).getDate();
+      var startDay = first.getDay();
+      html += '<div class="cal-month"><h3>' + esc(first.toLocaleDateString("en-US", { month: "long", year: "numeric" })) +
+        '</h3><table class="cal"><thead><tr>' +
+        wd.map(function (w, i) { return '<th scope="col"><abbr title="' + wdFull[i] + '">' + w + '</abbr></th>'; }).join("") +
+        '</tr></thead><tbody>';
+      var cells = [];
+      for (var b = 0; b < startDay; b++) cells.push("<td></td>");
+      for (var day = 1; day <= daysIn; day++) {
+        var dt = new Date(y, mo, day);
+        var k = dayKey(dt);
+        var dls = byDay[k];
+        var cls = "cal-day" + (k === todayK ? " today" : "");
+        if (dls) {
+          var names = dls.map(function (x) { return maybeScrub(x.label); }).join(", ");
+          var aria = dt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ": " + names;
+          cells.push('<td><button type="button" class="' + cls + '" data-day="' + k + '" aria-label="' + esc(aria) + '">' +
+            day + '<span class="dot" aria-hidden="true"></span></button></td>');
+        } else {
+          cells.push('<td><span class="' + cls + '"' + (k === todayK ? ' aria-current="date"' : "") + '>' + day + '</span></td>');
+        }
+      }
+      while (cells.length % 7 !== 0) cells.push("<td></td>");
+      var rows = "";
+      for (var r = 0; r < cells.length; r += 7) rows += "<tr>" + cells.slice(r, r + 7).join("") + "</tr>";
+      html += rows + "</tbody></table></div>";
+    });
+    document.getElementById("cal-months").innerHTML = html;
+    document.getElementById("cal-detail").innerHTML =
+      '<p class="muted small">Tap a highlighted date to see its deadline.</p>';
+  }
+  document.getElementById("cal-months").addEventListener("click", function (ev) {
+    var btn = ev.target && ev.target.closest ? ev.target.closest("button.cal-day") : null;
+    if (!btn || !currentData) return;
+    var k = btn.getAttribute("data-day");
+    document.querySelectorAll("button.cal-day.selected").forEach(function (b) { b.classList.remove("selected"); });
+    btn.classList.add("selected");
+    var dls = (currentData.deadlines || []).filter(function (dl) {
+      var dt = parseDay(dl.date);
+      return dt && dayKey(dt) === k;
+    });
+    document.getElementById("cal-detail").innerHTML = dls.map(function (dl) {
+      return '<p><strong>' + esc(maybeScrub(dl.label)) + '</strong></p>' + deadlineDetailHTML(dl);
+    }).join("");
+  });
+
+  /* ---------- deadlines sub-view toggle ---------- */
+  function setDlView(which) {
+    var map = { timeline: "dl-tl-wrap", list: "dl-list-wrap", cal: "dl-cal-wrap" };
+    Object.keys(map).forEach(function (k) {
+      document.getElementById(map[k]).hidden = k !== which;
+      document.getElementById("dl-view-" + k).setAttribute("aria-pressed", String(k === which));
+    });
+  }
+  ["timeline", "list", "cal"].forEach(function (k) {
+    document.getElementById("dl-view-" + k).addEventListener("click", function () { setDlView(k); });
+  });
+
+  /* ---------- shared row builders ---------- */
+  function T(s) { return esc(maybeScrub(s)); }
+  var uid = 0;
+  function xrow(mainHTML, detailHTML) {
+    uid += 1;
+    var id = "xd-" + uid;
+    return '<li class="xitem">' +
+      '<button type="button" class="xbtn" aria-expanded="false" aria-controls="' + id + '">' +
+      '<span class="main">' + mainHTML + '</span>' +
+      '<span class="chev" aria-hidden="true">&#9662;</span></button>' +
+      '<div class="xdetail" id="' + id + '" hidden>' + detailHTML + '</div></li>';
+  }
+  function chipHTML(status) {
+    return '<span class="' + chipClass(status) + '">' + esc(status) + '</span>';
+  }
+  function filterChips(elId, values, current, cb) {
+    var el = document.getElementById(elId);
+    el.innerHTML = "";
+    values.forEach(function (v) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "fchip";
+      b.textContent = v;
+      b.setAttribute("aria-pressed", String(v === current));
+      b.addEventListener("click", function () { cb(v); });
+      el.appendChild(b);
+    });
+  }
+  function uniqInOrder(items, key) {
+    var seen = {}, out = [];
+    items.forEach(function (it) {
+      var v = it[key];
+      if (v && !seen[v]) { seen[v] = 1; out.push(v); }
+    });
+    return out;
+  }
+
+  /* ---------- header + overview ---------- */
+  function viewerOf(d) {
+    if (previewPerson) {
+      var p = PREVIEWS[previewPerson];
+      return { name: p.name, role: p.role, tag: p.tag };
+    }
+    if (d.viewer) return d.viewer;
+    return sessionPerson || { name: "", role: "", tag: "" };
+  }
+  function renderHeader(d) {
+    var meta = d.meta || {};
+    document.getElementById("addr").textContent = maybeScrub(meta.address || "416 N Concord St");
+    document.getElementById("subtitle").textContent =
+      "Shared closing tracker" + (meta.lastUpdated ? " · Updated " + meta.lastUpdated : "");
+    var v = viewerOf(d);
+    document.getElementById("viewername").textContent = v.name || "";
+    document.getElementById("viewerrole").textContent = v.role || "";
+    var initials = (v.name || "?").split(" ").map(function (w) { return w.charAt(0); }).slice(0, 2).join("");
+    document.getElementById("avatar").textContent = initials;
+    document.getElementById("foot").textContent =
+      "You are seeing the part of this purchase that involves you. Questions: reply to whoever sent you your sign-in link.";
+  }
+  function renderOverview(d) {
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var dls = (d.deadlines || []).map(function (dl) { return { dl: dl, dt: parseDay(dl.date) }; })
+      .filter(function (x) { return x.dt; })
+      .sort(function (a, b) { return a.dt - b.dt; });
+    var next = dls.filter(function (x) { return x.dt >= today; })[0] || dls[dls.length - 1];
     if (next) {
       document.getElementById("k-next").textContent = next.dl.date;
-      document.getElementById("k-next-label").textContent = next.dl.label;
+      document.getElementById("k-next-label").textContent =
+        maybeScrub(next.dl.label) + " · " + relText(next.dt);
     }
     var steps = d.steps || [];
     var done = steps.filter(function (s) { return s.status === "Done"; }).length;
@@ -283,68 +934,303 @@
     document.getElementById("k-steps-bar").style.width = pct + "%";
     document.getElementById("k-steps-bar-wrap").setAttribute("aria-valuenow", String(pct));
     document.getElementById("k-open").textContent = String((d.openItems || []).length);
-    document.getElementById("k-settle").textContent = d.meta.settlementDate || "-";
-
-    document.getElementById("deadlines").innerHTML = (d.deadlines || []).map(function (dl) {
-      return '<li class="row"><div class="main"><div class="title">' + esc(dl.label) + '</div>' +
-        '<div class="muted small">' + esc(dl.note || "") + '</div></div>' +
-        '<span class="chip">' + esc(dl.date) + "</span></li>";
+    var settle = dls.filter(function (x) { return x.dl.key === "settlement"; })[0] || dls[dls.length - 1];
+    document.getElementById("k-settle").textContent = settle ? settle.dl.date : "-";
+    var upcoming = steps.filter(function (s) { return s.status !== "Done"; }).slice(0, 4);
+    document.getElementById("upnext").innerHTML = upcoming.map(function (s) {
+      return xrow(
+        '<span class="title">' + T(s.title) + '</span>' +
+        '<span class="muted small sub">' + T(s.dueNote || "") + '</span>' + chipHTML(s.status),
+        '<p class="small">' + T(s.note || s.dueNote || "") + '</p>' +
+        '<p class="muted small">Who: ' + T(s.owner || s.personTag || "") + ' · Status: ' + esc(s.status) + '</p>');
     }).join("");
+  }
 
+  /* ---------- steps / documents / open items / people ---------- */
+  var stepFilter = "All", docFilter = "All";
+  function renderSteps(d) {
+    var steps = d.steps || [];
+    filterChips("steps-filters", ["All"].concat(uniqInOrder(steps, "status")), stepFilter,
+      function (v) { stepFilter = v; renderSteps(currentData); });
+    var list = steps.filter(function (s) { return stepFilter === "All" || s.status === stepFilter; });
+    document.getElementById("steps").innerHTML = list.map(function (s) {
+      return xrow(
+        '<span class="title">' + T(s.title) + '</span>' +
+        '<span class="muted small sub">' + T(s.dueNote || "") + '</span>' + chipHTML(s.status),
+        '<p class="small">' + T(s.note || "") + '</p>' +
+        '<p class="muted small">Who: ' + T(s.owner || s.personTag || "") + ' · Timing: ' + T(s.dueNote || "") + '</p>');
+    }).join("");
+    document.getElementById("steps-empty").hidden = list.length > 0;
+  }
+  function renderDocs(d) {
+    var docs = d.documents || [];
+    filterChips("docs-filters", ["All"].concat(uniqInOrder(docs, "status")), docFilter,
+      function (v) { docFilter = v; renderDocs(currentData); });
+    var list = docs.filter(function (x) { return docFilter === "All" || x.status === docFilter; });
+    document.getElementById("documents").innerHTML = list.map(function (x) {
+      var detail = '<p class="small">' + T(x.detail || x.note || "") + '</p>' +
+        '<p class="muted small">For: ' + T(x.personTag || "") + (x.grp ? ' · Group: ' + T(x.grp) : "") + '</p>';
+      if (x.link) detail += '<p class="small"><a href="' + esc(x.link) + '">Open the document</a></p>';
+      return xrow(
+        '<span class="title">' + T(x.name) + '</span>' +
+        '<span class="muted small sub">' + T(x.detail || "") + '</span>' + chipHTML(x.status),
+        detail);
+    }).join("");
+    document.getElementById("docs-empty").hidden = list.length > 0;
+  }
+  function renderOpen(d) {
+    document.getElementById("openitems").innerHTML = (d.openItems || []).map(function (o) {
+      return xrow(
+        '<span class="title">' + T(o.title) + '</span>' +
+        '<span class="muted small sub">' + T(o.issue || "") + '</span>',
+        '<p class="small">' + T(o.issue || "") + '</p>' +
+        (o.path ? '<p class="small">Path: ' + T(o.path) + '</p>' : "") +
+        '<p class="muted small">Owner view: ' + T(o.personTag || "") + '</p>');
+    }).join("");
+    var pill = document.getElementById("tab-open-count");
+    var n = (d.openItems || []).length;
+    pill.hidden = n === 0;
+    pill.textContent = String(n);
+  }
+  function renderPeople(d) {
     document.getElementById("people").innerHTML = (d.people || []).map(function (p) {
-      return '<li class="row"><div class="main"><div class="title">' + esc(p.name) + "</div>" +
-        '<div class="muted small">' + esc(p.role) + (p.org ? " - " + esc(p.org) : "") + "</div></div></li>";
+      return '<li><strong>' + T(p.name) + '</strong> ' +
+        '<span class="muted small">' + T(p.role) + (p.org ? ' · ' + T(p.org) : "") + '</span></li>';
     }).join("");
-
-    document.getElementById("steps").innerHTML = steps.map(function (s) {
-      return '<li class="row"><div class="main"><div class="title">' + esc(s.title) + "</div>" +
-        '<div class="muted small">Owner: ' + esc(s.owner || "") + (s.dueNote ? " - " + esc(s.dueNote) : "") + "</div>" +
-        (s.note ? '<div class="small">' + esc(s.note) + "</div>" : "") + "</div>" +
-        '<span class="' + chipClass(s.status) + '">' + esc(s.status) + "</span></li>";
-    }).join("");
-
-    document.getElementById("documents").innerHTML = (d.documents || []).map(function (doc) {
-      var link = doc.link ? ' <a href="' + esc(doc.link) + '" target="_blank" rel="noopener">Open</a>' : "";
-      return '<li class="row"><div class="main"><div class="title">' + esc(doc.name) + link + "</div>" +
-        '<div class="muted small">' + esc(doc.detail || "") + (doc.note ? " " + esc(doc.note) : "") + "</div></div>" +
-        '<span class="' + chipClass(doc.status) + '">' + esc(doc.status) + "</span></li>";
-    }).join("");
-
-    document.getElementById("openitems").innerHTML = (d.openItems || []).map(function (it) {
-      return '<li class="row"><div class="main"><div class="title">' + esc(it.title) + "</div>" +
-        '<div class="small">' + esc(it.issue || "") + "</div>" +
-        '<div class="muted small">' + esc(it.path || "") + "</div></div></li>";
-    }).join("");
-
-    document.getElementById("foot").textContent =
-      "You are seeing the items tagged for you, plus the items shared with all parties. Last updated " +
-      (d.meta.lastUpdated || "") + ".";
-    app.hidden = false;
   }
 
-  if (!session()) {
-    signedout.hidden = false;
-    return;
-  }
-  api("/api/session").then(function (res) {
-    if (!res.body || !res.body.ok) {
-      try { sessionStorage.removeItem(KEY); } catch (e) {}
-      signedout.hidden = false;
-      return;
-    }
-    var me = res.body.person;
-    return api("/api/dashboard").then(function (res2) {
-      if (!res2.body || !res2.body.ok) {
-        fatal.textContent = "We could not load the dashboard. Please sign in again.";
-        signedout.hidden = false;
-        return;
-      }
-      render(res2.body.dashboard, me);
+  /* ---------- flags ---------- */
+  function renderFlags(d) {
+    var flags = (d.flags || []).concat(d.lender && d.lender.flags ? d.lender.flags : []);
+    var rank = { conflict: 0, warning: 1, info: 2 };
+    flags.sort(function (a, b) {
+      return (rank[a.severity] - rank[b.severity]) || String(a.title).localeCompare(String(b.title));
     });
-  }).catch(function () {
-    fatal.textContent = "We could not reach the dashboard service. Please try again.";
-    signedout.hidden = false;
+    var pill = document.getElementById("tab-flags-count");
+    pill.hidden = flags.length === 0;
+    pill.textContent = String(flags.length);
+    document.getElementById("flags").innerHTML = flags.map(function (f) {
+      var cls = f.severity === "conflict" ? "chip conflict" :
+        f.severity === "warning" ? "chip waiting" : "chip";
+      return '<li><div><strong>' + T(f.title) + '</strong> ' +
+        '<span class="' + cls + '">' + esc(f.severity) + '</span></div>' +
+        '<div class="small">' + T(f.detail) + '</div>' +
+        (f.sources ? '<div class="muted small">Sources: ' + T(f.sources) + '</div>' : "") +
+        '<div class="muted small">Detected ' + esc(f.detected || "") + '</div></li>';
+    }).join("");
+    document.getElementById("flags-empty").hidden = flags.length > 0;
+  }
+
+  /* ---------- lender breakdown (Matt only) ---------- */
+  function fmt(n) {
+    return "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function interestFor(offer, scen, holdYears) {
+    if (holdYears === 30 && offer.lifetimeInterest != null) {
+      return { v: offer.lifetimeInterest, computed: false };
+    }
+    var P = scen.loan, r = offer.rate / 100 / 12, n = holdYears * 12, pmt = offer.pi;
+    var f = Math.pow(1 + r, n);
+    var bal = P * f - pmt * ((f - 1) / r);
+    return { v: pmt * n - (P - bal), computed: true };
+  }
+  function barGroup(title, offers, vals, bestIdx) {
+    var max = Math.max.apply(null, vals.concat([1]));
+    var html = '<div class="bar-group"><h3 class="bar-title">' + esc(title) + '</h3>';
+    offers.forEach(function (o, i) {
+      html += '<div class="bar-row' + (i === bestIdx ? " best" : "") + '">' +
+        '<span class="bar-name">' + esc(o.name) + '</span>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' +
+        Math.max(2, Math.round(100 * vals[i] / max)) + '%"></div></div>' +
+        '<span class="bar-val">' + fmt(vals[i]) + '</span></div>';
+    });
+    return html + "</div>";
+  }
+  function minIdx(vals) {
+    var bi = 0;
+    vals.forEach(function (v, i) { if (v < vals[bi]) bi = i; });
+    return bi;
+  }
+  function renderLenders() {
+    var L = fullData && fullData.lender;
+    if (!L) return;
+    var scen = L.scenarios[lendState.dp];
+    var offers = scen.offers;
+    document.getElementById("lend-asof").textContent =
+      "Offers as of " + L.asOf + ", from the lenders' own worksheets on file (LENDER_COMPARISON.md). " +
+      "This section exists only in your view; it is not in anyone else's payload.";
+    document.getElementById("lend-scenario-note").textContent = scen.note ||
+      (lendState.dp === "3"
+        ? "Current scenario: 3% down, decided Nov 19, 2026. Both lenders reran at 3% on Nov 20, 2026."
+        : "");
+    ["3", "5"].forEach(function (k) {
+      document.getElementById("lend-dp-" + k).setAttribute("aria-pressed", String(lendState.dp === k));
+    });
+    [30, 7].forEach(function (h) {
+      document.getElementById("lend-hold-" + h).setAttribute("aria-pressed", String(lendState.hold === h));
+    });
+    var interests = offers.map(function (o) { return interestFor(o, scen, lendState.hold); });
+    var cashLeft = offers.map(function (o) { return lendState.cash - o.cashToClose; });
+    var bMonth = minIdx(offers.map(function (o) { return o.monthly; }));
+    var bCash = minIdx(offers.map(function (o) { return o.cashToClose; }));
+    var bInt = minIdx(interests.map(function (x) { return x.v; }));
+    var bLeft = 0;
+    cashLeft.forEach(function (v, i) { if (v > cashLeft[bLeft]) bLeft = i; });
+    function row(label, cells, bestIdx) {
+      var html = "<tr><th scope=\"row\">" + esc(label) + "</th>";
+      cells.forEach(function (c, i) {
+        html += '<td' + (i === bestIdx ? ' class="best"' : "") + ">" + c + "</td>";
+      });
+      return html + "</tr>";
+    }
+    var head = "<tr><th scope=\"col\"><span class=\"sr-only\">Measure</span></th>" + offers.map(function (o) {
+      return '<th scope="col">' + esc(o.name) + '<div class="muted small">' + esc(o.lender) + " · " + esc(o.date) + "</div></th>";
+    }).join("") + "</tr>";
+    var body = "";
+    body += row("Rate", offers.map(function (o) { return o.rate.toFixed(3) + "%"; }), -1);
+    body += row("APR", offers.map(function (o) { return o.apr.toFixed(3) + "%"; }), -1);
+    body += row("Monthly total", offers.map(function (o) { return fmt(o.monthly); }), bMonth);
+    body += row("Principal and interest", offers.map(function (o) { return fmt(o.pi); }), -1);
+    body += row("Mortgage insurance / mo", offers.map(function (o) { return fmt(o.mi); }), -1);
+    body += row("Down payment", offers.map(function () { return fmt(scen.downPayment); }), -1);
+    body += row("Loan amount", offers.map(function () { return fmt(scen.loan); }), -1);
+    body += row("Cash to close", offers.map(function (o) { return fmt(o.cashToClose); }), bCash);
+    body += row("Interest over " + lendState.hold + " years", interests.map(function (x) {
+      return fmt(x.v) + (x.computed ? ' <span class="muted small">(computed)</span>' : "");
+    }), bInt);
+    body += row("Cash left after closing (computed)", cashLeft.map(function (v) { return fmt(v); }), bLeft);
+    document.getElementById("lend-table").innerHTML = head + body;
+    document.getElementById("lend-charts").innerHTML =
+      barGroup("Monthly total", offers, offers.map(function (o) { return o.monthly; }), bMonth) +
+      barGroup("Cash to close", offers, offers.map(function (o) { return o.cashToClose; }), bCash) +
+      barGroup("Interest over " + lendState.hold + " years", offers, interests.map(function (x) { return x.v; }), bInt);
+    document.getElementById("lend-waiting").innerHTML = (L.waiting || []).map(function (w) {
+      return '<li><div><strong>' + esc(w.title) + '</strong> ' + chipHTML(w.status) + '</div>' +
+        '<div class="small">' + esc(w.detail) + '</div>' +
+        '<div class="muted small">Owner: ' + esc(w.owner) + ' · Expected: ' + esc(w.expected) + '</div></li>';
+    }).join("");
+    var otherKey = lendState.dp === "3" ? "5" : "3";
+    var other = L.scenarios[otherKey];
+    document.getElementById("lend-earlier").innerHTML = other.offers.map(function (o) {
+      return xrow(
+        '<span class="title">' + esc(o.name) + " (" + otherKey + '% down, ' + esc(o.date) + ')</span>' +
+        '<span class="muted small sub">' + o.rate.toFixed(3) + "% · " + fmt(o.monthly) + "/mo · " + fmt(o.cashToClose) + " cash to close</span>",
+        '<p class="small">' + esc(o.note || "") + '</p>' +
+        '<p class="muted small">Earlier quote on the ' + otherKey + '% down scenario, superseded by the current comparison. ' +
+        esc(other.note || "") + '</p>');
+    }).join("");
+  }
+  ["3", "5"].forEach(function (k) {
+    document.getElementById("lend-dp-" + k).addEventListener("click", function () {
+      lendState.dp = k; renderLenders();
+    });
   });
+  [30, 7].forEach(function (h) {
+    document.getElementById("lend-hold-" + h).addEventListener("click", function () {
+      lendState.hold = h; renderLenders();
+    });
+  });
+  document.getElementById("lend-cash").addEventListener("input", function (ev) {
+    var v = parseFloat(ev.target.value);
+    lendState.cash = isNaN(v) ? 0 : v;
+    renderLenders();
+  });
+
+  /* ---------- preview as (Matt only, client-side slice) ---------- */
+  var PREVIEWS = {
+    carole: { tag: "Carole", name: "Carole Kirchner", role: "Buyer's agent" },
+    jim: { tag: "Lender", name: "Jim Rossiter", role: "Lender, Movement Mortgage" },
+    sam: { tag: "Lender", name: "Sam Totoro", role: "Lender, Univest" },
+    seller: { tag: "Seller side", name: "Julie Peteritas", role: "Sellers' agent" },
+    title: { tag: "Title", name: "Sarah Tompos", role: "Title, Homesale Settlement Services" }
+  };
+  function sliceForPreview(p) {
+    var vis = function (r) {
+      var t = r.personTag || "All parties";
+      return t === "All parties" || t === p.tag;
+    };
+    return {
+      meta: fullData.meta,
+      deadlines: fullData.deadlines,
+      people: fullData.people,
+      steps: (fullData.steps || []).filter(vis),
+      documents: (fullData.documents || []).filter(vis),
+      openItems: (fullData.openItems || []).filter(vis),
+      flags: (fullData.flags || []).filter(vis),
+      viewer: { name: p.name, role: p.role, tag: p.tag }
+    };
+  }
+  function enterPreview(key) {
+    var p = PREVIEWS[key];
+    if (!p || !fullData) return;
+    previewPerson = key;
+    viewerTag = p.tag;
+    currentData = sliceForPreview(p);
+    document.getElementById("preview-banner-text").textContent =
+      "Previewing as " + p.name + " (" + p.role + "). This is the view their sign-in shows. Nothing was sent and no link or session was created.";
+    document.getElementById("preview-banner").hidden = false;
+    render();
+  }
+  function exitPreview() {
+    if (!previewPerson) return;
+    previewPerson = null;
+    viewerTag = sessionPerson ? sessionPerson.tag : "Matt";
+    currentData = fullData;
+    document.getElementById("preview-banner").hidden = true;
+    document.getElementById("preview-select").value = "self";
+    render();
+  }
+  document.getElementById("preview-select").addEventListener("change", function (ev) {
+    if (ev.target.value === "self") exitPreview();
+    else enterPreview(ev.target.value);
+  });
+  document.getElementById("preview-exit").addEventListener("click", exitPreview);
+
+  /* ---------- master render + boot ---------- */
+  function render() {
+    var d = currentData;
+    if (!d) return;
+    renderHeader(d);
+    renderOverview(d);
+    renderTimeline(d);
+    renderDeadlineList(d);
+    renderCalendar(d);
+    renderSteps(d);
+    renderDocs(d);
+    renderOpen(d);
+    renderPeople(d);
+    renderFlags(d);
+    var isMattSession = !!(sessionPerson && sessionPerson.tag === "Matt");
+    document.getElementById("previewbar").hidden = !isMattSession;
+    var showLenders = !!d.lender && !previewPerson;
+    document.getElementById("tab-lenders").hidden = !showLenders;
+    if (showLenders) renderLenders();
+    activateTab(activeTabId);
+  }
+  function boot() {
+    if (!session()) return;
+    api("/api/session").then(function (r) {
+      if (!r.body || !r.body.ok) return;
+      sessionPerson = r.body.person;
+      return api("/api/dashboard").then(function (r2) {
+        if (!r2.body || !r2.body.ok) {
+          fatal.textContent = "Signed in, but the dashboard data could not be loaded. Try again in a moment.";
+          return;
+        }
+        fullData = r2.body.dashboard;
+        currentData = fullData;
+        viewerTag = sessionPerson.tag;
+        if (fullData.lender && fullData.lender.cashAvailableDefault != null) {
+          lendState.cash = fullData.lender.cashAvailableDefault;
+          document.getElementById("lend-cash").value = String(lendState.cash);
+        }
+        signedout.hidden = true;
+        app.hidden = false;
+        render();
+      });
+    }).catch(function () {});
+  }
+  boot();
 })();
 </script>
 </body>
