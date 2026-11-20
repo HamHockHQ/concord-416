@@ -269,7 +269,7 @@
     header.top h1 { font-size: 18px; }
     /* Casey rule from the critique: primary navigation lives in the thumb zone. */
     .tabwrap {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin-top: 0;
+      position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 20; margin-top: 0;
       background: rgba(255,255,255,.98); box-shadow: 0 -4px 20px rgba(0,0,0,.10);
       padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     }
@@ -732,8 +732,12 @@
       var date = '<span class="tl-date">' + esc(x.dl.date) + '</span>';
       var above = (i % 2 === 0) ? name : date;
       var below = (i % 2 === 0) ? date : name;
-      var aria = maybeScrub(x.dl.label) + ", " +
-        x.dt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ", " + relText(x.dt);
+      // Accessible name must contain the visible text verbatim
+      // (axe label-content-name-mismatch): use the visible label and
+      // date strings, in their visible order, and nothing else.
+      var aria = (i % 2 === 0)
+        ? maybeScrub(x.dl.label) + " " + x.dl.date
+        : x.dl.date + " " + maybeScrub(x.dl.label);
       html += '<button type="button" class="' + cls + '" data-dlkey="' + esc(x.k) + '" data-x="' + leftPx(x.dt.getTime()) +
         '" style="left:' + leftPx(x.dt.getTime()) + 'px" aria-label="' + esc(aria) + '">' +
         '<span class="tl-slot">' + above + '</span>' +
@@ -1163,6 +1167,8 @@
   function enterPreview(key) {
     var p = PREVIEWS[key];
     if (!p || !fullData) return;
+    stepFilter = "All";
+    docFilter = "All";
     previewPerson = key;
     viewerTag = p.tag;
     currentData = sliceForPreview(p);
@@ -1173,6 +1179,8 @@
   }
   function exitPreview() {
     if (!previewPerson) return;
+    stepFilter = "All";
+    docFilter = "All";
     previewPerson = null;
     viewerTag = sessionPerson ? sessionPerson.tag : "Matt";
     currentData = fullData;
