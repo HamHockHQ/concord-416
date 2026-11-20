@@ -487,7 +487,7 @@ function confirmPage() {
   .card { background:#fff; border-radius: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.08); padding: 28px; }
   h1 { font-size: 22px; margin: 0 0 8px; }
   p { color:#55575c; line-height: 1.5; }
-  button { width:100%; padding: 14px; font-size: 16px; font-weight: 600; border:0; border-radius: 12px; background:#FF5A47; color:#fff; cursor:pointer; min-height:48px; }
+  button { width:100%; padding: 14px; font-size: 16px; font-weight: 600; border:0; border-radius: 12px; background:#D63A2A; color:#fff; cursor:pointer; min-height:48px; }
   button:disabled { opacity:.55; cursor:default; }
   .msg { margin-top: 14px; font-size: 14px; }
 </style>

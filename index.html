@@ -60,7 +60,7 @@
   }
   .who { display: flex; align-items: center; gap: 10px; }
   .avatar {
-    width: 42px; height: 42px; border-radius: 50%; background: var(--accent);
+    width: 42px; height: 42px; border-radius: 50%; background: #D63A2A;
     color: #fff; display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 16px;
   }
@@ -70,7 +70,7 @@
   .kpi { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
   .kpi .label { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .kpi .value { font-size: 22px; font-weight: 650; line-height: 1.2; }
-  .kpi.coral { background: var(--accent); color: #fff; }
+  .kpi.coral { background: #D63A2A; color: #fff; }
   .kpi.coral .label { color: #fff; }
   .kpi.coral .value { font-size: 24px; }
 
@@ -120,7 +120,7 @@
   </main>
 
   <!-- Signed-in view: rendered from the session-gated API. -->
-  <div id="app" hidden>
+  <main id="app" hidden>
     <header class="top">
       <div>
         <h1 id="addr">Closing Tracker</h1>
@@ -186,7 +186,7 @@
     </section>
 
     <p class="muted small" id="foot"></p>
-  </div>
+  </main>
 
   <p id="fatal" class="small" role="alert"></p>
 </div>
