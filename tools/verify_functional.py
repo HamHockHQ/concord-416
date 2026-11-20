@@ -115,21 +115,26 @@ check("scanner_get_spends_nothing",
       {"signin_status": s, "peek": peek,
        "token_used_at_after_get": tok_row[-1]["used_at"] if tok_row else "no row"})
 
-# 4. Happy path + slice: Carole redeems, sees only Carole + All parties.
+# 4. Happy path + slice: Carole redeems. Documents and open items stay
+# Carole + All parties only; her STEPS are the full timeline (Matt
+# walkthrough, 2026-11-20: she keeps the buyer on track).
 s, red = redeem(token_c)
 carole_session = red.get("session")
 s, dash = dashboard(carole_session)
 d = dash.get("dashboard", {})
 doc_names = [x["name"] for x in d.get("documents", [])]
 step_titles = [x["title"] for x in d.get("steps", [])]
-tags = {x["personTag"] for x in d.get("documents", []) + d.get("steps", []) + d.get("openItems", [])}
-check("carole_slice_only_own_plus_all_parties",
+tags = {x["personTag"] for x in d.get("documents", []) + d.get("openItems", [])}
+check("carole_slice_docs_items_restricted_steps_full_timeline",
       red.get("ok") and dash.get("ok")
       and "Buyer's Estimated Costs (BEC)" not in doc_names
       and "Wire Funds Policy" not in doc_names
       and "Appraisal Contingency Addendum" not in doc_names
       and "Fully executed agreement with seller signatures" in doc_names
-      and tags <= {"Carole", "All parties"},
+      and tags <= {"Carole", "All parties"}
+      and len(step_titles) == 12
+      and "Mortgage application" in step_titles
+      and "Settlement" in step_titles,
       {"doc_count": len(doc_names), "step_count": len(step_titles), "tags_seen": sorted(tags)})
 
 # 5. Single use: second redeem of the same link fails, creates no session.
@@ -149,18 +154,23 @@ matt_session = redm.get("session")
 s, dashm = dashboard(matt_session)
 dm = dashm.get("dashboard", {})
 check("matt_full_view",
-      dashm.get("ok") and len(dm.get("steps", [])) == 11
+      dashm.get("ok") and len(dm.get("steps", [])) == 12
       and len(dm.get("documents", [])) == 14
-      and len(dm.get("openItems", [])) == 5,
+      and len(dm.get("openItems", [])) == 4,
       {"steps": len(dm.get("steps", [])), "documents": len(dm.get("documents", [])),
        "openItems": len(dm.get("openItems", []))})
 
 # 7. Money check: no funds data in the payload or in either slice.
+# "19900" (Matt's cash-available default) legitimately appears inside
+# Matt's own lender section since 2026-11-20; it must never appear in a
+# non-Matt slice, so it is checked against Carole's slice only.
 forbidden = ["5192.28", "liquid_for_sure", "balance_due", "cash_needed",
-             "boa_checking", "ending_balance", '"funds":', "19900"]
+             "boa_checking", "ending_balance", '"funds":']
 blobs = {"payload": json.dumps(state5.get("payload")),
          "carole_slice": json.dumps(d), "matt_slice": json.dumps(dm)}
 hits = {k: [f for f in forbidden if f in v] for k, v in blobs.items()}
+if "19900" in blobs["carole_slice"]:
+    hits["carole_slice"].append("19900")
 check("money_data_absent_everywhere", all(not v for v in hits.values()), hits)
 
 # 8. New link invalidates old (Jim).
@@ -235,6 +245,61 @@ cfg = stateF.get("config", {})
 check("shutoff_config_present_unarmed",
       cfg.get("disableLendersAfter") is None and cfg.get("disableAllAfter") is None,
       {"config": cfg})
+
+# 16. Walkthrough feedback (2026-11-20): lender-name scrub both ways.
+# Sam's slice must never name Movement; Jim's must never name Univest.
+JULIE = people["Julie Peteritas"]["id"]
+
+def fresh_dash(pid):
+    _, tok = make_link(pid)
+    _, r = redeem(tok)
+    _, dd2 = dashboard(r.get("session"))
+    return dd2.get("dashboard", {})
+
+sam_d = fresh_dash(SAM)
+sam_blob = json.dumps(sam_d)
+sam_people = {p["name"]: p for p in sam_d.get("people", [])}
+sam_steps = [x["title"] for x in sam_d.get("steps", [])]
+check("sam_slice_never_names_movement",
+      "Movement" not in sam_blob
+      and "Mortgage application" in sam_steps
+      and not sam_people.get("Jim Rossiter", {}).get("org"),
+      {"org_on_jim_row": sam_people.get("Jim Rossiter", {}).get("org"),
+       "sam_step_count": len(sam_steps)})
+
+jim_d = fresh_dash(JIM)
+jim_blob = json.dumps(jim_d)
+jim_people = {p["name"]: p for p in jim_d.get("people", [])}
+check("jim_slice_never_names_univest",
+      "Univest" not in jim_blob
+      and not jim_people.get("Sam Totoro", {}).get("org"),
+      {"org_on_sam_row": jim_people.get("Sam Totoro", {}).get("org")})
+
+# 17. Negotiation summary lives in Matt's payload only, and no shared
+# slice carries any currency amount.
+import re as _re
+matt_blob = json.dumps(dm)
+others = {"carole": json.dumps(d), "sam": sam_blob, "jim": jim_blob}
+leaks = {k: [m for m in ["negotiation", "Negotiation", "444806"] if m in v]
+         for k, v in others.items()}
+cur_hits = {k: _re.findall(r"\$\s?\d[\d,]*(?:\.\d{2})?", v) for k, v in others.items()}
+check("negotiation_matt_only_no_currency_in_shared_slices",
+      "beat these numbers" in matt_blob
+      and all(not v for v in leaks.values())
+      and all(not v for v in cur_hits.values()),
+      {"leaks": leaks, "currency": cur_hits})
+
+# 18. Seller slice carries the inspection-results step; the stale open
+# item is gone; Carole's step list is the full timeline.
+julie_d = fresh_dash(JULIE)
+julie_steps = [x["title"] for x in julie_d.get("steps", [])]
+matt_items = [x["title"] for x in dm.get("openItems", [])]
+check("seller_inspection_step_and_stale_item_removed",
+      "Inspection results and repair negotiation" in julie_steps
+      and "Seller execution confirmed" not in matt_items
+      and len(step_titles) == len(dm.get("steps", [])),
+      {"julie_steps": julie_steps, "matt_open_items": matt_items,
+       "carole_step_count": len(step_titles)})
 
 summary = {
     "ran_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),

@@ -139,7 +139,7 @@ async function axeRun(page, label, axeResults) {
     }));
     check("Matt: lenders tab visible", tabs.lendersHidden === false, "tab-lenders hidden=" + tabs.lendersHidden);
     check("Matt: flags badge = 11", tabs.flagsPill === "11" && !tabs.flagsPillHidden, "pill=" + tabs.flagsPill);
-    check("Matt: open items badge = 5", tabs.openPill === "5", "pill=" + tabs.openPill);
+    check("Matt: open items badge = 4", tabs.openPill === "4", "pill=" + tabs.openPill);
     check("Matt: preview-as control visible", tabs.previewVisible, "");
     await axeRun(page, "matt-overview", axeResults);
 
@@ -202,7 +202,7 @@ async function axeRun(page, label, axeResults) {
     });
     await page.waitForTimeout(200);
     const after = await page.evaluate(() => document.querySelectorAll("#steps .xitem").length);
-    check("Matt: steps filter Done narrows 11 -> 2", before === 11 && after === 2, before + " -> " + after);
+    check("Matt: steps filter Done narrows 12 -> 2", before === 12 && after === 2, before + " -> " + after);
 
     // Lenders
     await page.click("#tab-lenders");
@@ -224,6 +224,9 @@ async function axeRun(page, label, axeResults) {
     await page.waitForTimeout(250);
     const lendCash = await page.evaluate(() => document.getElementById("lend-table").textContent);
     check("Matt: cash-available 15000 shows Movement cash left -$2,217.70", lendCash.includes("-$2,217.70") || lendCash.includes("$-2,217.70"), lendCash.match(/Cash left[^$]*(\S+)/) ? "" : "");
+    const neg = await page.evaluate(() => document.getElementById("lend-neg").textContent);
+    check("Matt: negotiation summary renders with the leverage line",
+      /Worksheet 1 has the lowest monthly/.test(neg) && /beat these numbers/.test(neg), neg.slice(0, 100));
     await page.screenshot({ path: path.join(OUT, "matt-lenders.png"), fullPage: true });
     await axeRun(page, "matt-lenders", axeResults);
 
@@ -255,7 +258,7 @@ async function axeRun(page, label, axeResults) {
     }));
     check("Preview Carole: banner shows", prev.banner && /Previewing as Carole Kirchner/.test(prev.bannerText), prev.bannerText.slice(0, 80));
     check("Preview Carole: lenders tab hidden", prev.lendersHidden === true, "");
-    check("Preview Carole: steps sliced to 2", prev.steps === 2, "steps=" + prev.steps);
+    check("Preview Carole: full step timeline (12 steps)", prev.steps === 12, "steps=" + prev.steps);
     check("Preview Carole: flags sliced to 2", prev.flagRows === 2, "flags=" + prev.flagRows);
     check("Preview Carole: no currency anywhere in the DOM", prev.bodyHasCurrency === false, "");
     check("Preview Carole: header shows Carole", prev.viewer === "Carole Kirchner", prev.viewer);
@@ -286,7 +289,7 @@ async function axeRun(page, label, axeResults) {
       lendersHidden: document.getElementById("tab-lenders").hidden,
       tlPoints: document.querySelectorAll(".tl-point").length,
     }));
-    check(`Carole ${vp.name}: slice steps=2`, info.steps === 2, "steps=" + info.steps);
+    check(`Carole ${vp.name}: full step timeline (12 steps)`, info.steps === 12, "steps=" + info.steps);
     check(`Carole ${vp.name}: flags=2 (amendment + register C7)`, info.flagRows === 2 && /Contract amendment pending/.test(info.flagText), "flags=" + info.flagRows);
     check(`Carole ${vp.name}: no currency in DOM`, info.bodyHasCurrency === false, "");
     check(`Carole ${vp.name}: no lenders tab`, info.lendersHidden === true, "");

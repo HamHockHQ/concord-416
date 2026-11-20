@@ -178,8 +178,8 @@
 
   /* horizontal timeline */
   .tl-scroll { overflow-x: auto; padding: 4px 2px 2px; -webkit-overflow-scrolling: touch; }
-  .tl-inner { position: relative; height: 108px; }
-  .tl-track { position: absolute; left: 0; right: 0; top: 43px; height: 3px; background: #e3e1de; border-radius: 999px; }
+  .tl-inner { position: relative; height: 120px; }
+  .tl-track { position: absolute; left: 0; right: 0; top: 49px; height: 3px; background: #e3e1de; border-radius: 999px; }
   .tl-tick {
     position: absolute; bottom: 0; transform: translateX(-50%);
     font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
@@ -191,11 +191,11 @@
     padding: 2px 7px; border-radius: 999px; white-space: nowrap;
   }
   .tl-point {
-    position: absolute; top: 0; width: 88px; margin-left: -44px; height: 92px;
+    position: absolute; top: 0; width: 96px; margin-left: -48px; height: 100px;
     display: flex; flex-direction: column; align-items: center;
     background: none; border: 0; cursor: pointer; font: inherit; color: inherit; padding: 0 2px;
   }
-  .tl-slot { height: 34px; display: flex; align-items: flex-end; justify-content: center; text-align: center; overflow: hidden; }
+  .tl-slot { height: 40px; display: flex; align-items: flex-end; justify-content: center; text-align: center; overflow: hidden; }
   .tl-slot.below { align-items: flex-start; }
   .tl-dotwrap { height: 20px; display: flex; align-items: center; justify-content: center; flex: none; }
   .tl-dot {
@@ -206,7 +206,7 @@
   .tl-point.past .tl-name { color: var(--muted); font-weight: 500; }
   .tl-point.next .tl-dot { box-shadow: 0 0 0 2px var(--accent), 0 0 0 6px var(--peach); }
   .tl-point.selected .tl-dot { background: var(--accent-dark); box-shadow: 0 0 0 3px var(--accent-dark); transform: scale(1.2); }
-  .tl-name { font-size: 11px; font-weight: 600; line-height: 1.25; }
+  .tl-name { font-size: 11px; font-weight: 600; line-height: 1.2; }
   .tl-date { font-size: 11px; color: var(--muted); }
   .tl-detail { border-top: 1px solid #eee; margin-top: 10px; padding-top: 12px; }
   .tl-detail p { margin: 0 0 6px; }
@@ -487,6 +487,10 @@
         <h2 id="h-lend-charts">Side by side</h2>
         <div id="lend-charts"></div>
       </section>
+      <section class="card" aria-labelledby="h-lend-neg">
+        <h2 id="h-lend-neg">Negotiation summary</h2>
+        <div id="lend-neg"></div>
+      </section>
       <section class="card" aria-labelledby="h-lend-waiting">
         <h2 id="h-lend-waiting">Requested and waiting</h2>
         <ul class="clean" id="lend-waiting"></ul>
@@ -714,6 +718,30 @@
     var nextItem = null;
     items.forEach(function (x) { if (!nextItem && x.dt >= today) nextItem = x; });
 
+    // Label staggering (Matt walkthrough, 2026-11-20): plain alternation
+    // let labels collide where deadlines sit close together (Nov 23 and
+    // Nov 25 are 40px apart, less than one 96px label box, so a date and
+    // the next point's name shared the same band and overlapped). Each
+    // point's name now goes on the side of the track whose previous name
+    // centre is farthest back, with alternating preference, so two names
+    // on the same side are never closer than NAME_MIN_GAP px; the date
+    // takes the other side, and same-side dates inherit the same spacing.
+    var NAME_MIN_GAP = 108;
+    var lastNameX = { above: -Infinity, below: -Infinity };
+    var lastSide = "below";
+    items.forEach(function (x) {
+      var cx = leftPx(x.dt.getTime());
+      var pref = lastSide === "above" ? "below" : "above";
+      var other = pref === "above" ? "below" : "above";
+      var side;
+      if (cx - lastNameX[pref] >= NAME_MIN_GAP) side = pref;
+      else if (cx - lastNameX[other] >= NAME_MIN_GAP) side = other;
+      else side = (cx - lastNameX.above >= cx - lastNameX.below) ? "above" : "below";
+      lastNameX[side] = cx;
+      lastSide = side;
+      x.nameSide = side;
+    });
+
     var html = '<div class="tl-track" aria-hidden="true"></div>';
     var tick = new Date(start); tick.setDate(1); tick.setHours(0, 0, 0, 0);
     if (tick.getTime() < start) tick.setMonth(tick.getMonth() + 1);
@@ -730,8 +758,8 @@
       var cls = "tl-point" + (past ? " past" : "") + (x === nextItem ? " next" : "");
       var name = '<span class="tl-name">' + esc(maybeScrub(x.dl.label)) + '</span>';
       var date = '<span class="tl-date">' + esc(x.dl.date) + '</span>';
-      var above = (i % 2 === 0) ? name : date;
-      var below = (i % 2 === 0) ? date : name;
+      var above = x.nameSide === "above" ? name : date;
+      var below = x.nameSide === "above" ? date : name;
       // No aria-label here: the button's visible text (label + date)
       // is its accessible name. An explicit aria-label on these
       // multi-span buttons trips axe's label-content-name-mismatch
@@ -1107,6 +1135,13 @@
       barGroup("Monthly total", offers, offers.map(function (o) { return o.monthly; }), bMonth) +
       barGroup("Cash to close", offers, offers.map(function (o) { return o.cashToClose; }), bCash) +
       barGroup("Interest over " + lendState.hold + " years", offers, interests.map(function (x) { return x.v; }), bInt);
+    var neg = L.negotiation || {};
+    document.getElementById("lend-neg").innerHTML =
+      (neg.intro ? '<p class="small">' + esc(neg.intro) + "</p>" : "") +
+      '<ul class="clean">' + (neg.points || []).map(function (p) {
+        return '<li><div class="small">' + esc(p) + "</div></li>";
+      }).join("") + "</ul>" +
+      (neg.leverage ? '<p class="small"><strong>Leverage:</strong> ' + esc(neg.leverage) + "</p>" : "");
     document.getElementById("lend-waiting").innerHTML = (L.waiting || []).map(function (w) {
       return '<li><div><strong>' + esc(w.title) + '</strong> ' + chipHTML(w.status) + '</div>' +
         '<div class="small">' + esc(w.detail) + '</div>' +
@@ -1152,11 +1187,24 @@
       var t = r.personTag || "All parties";
       return t === "All parties" || t === p.tag;
     };
+    // Mirror of the Worker's sliceFor (keep the two in step): a lender's
+    // org shows only on that lender's own people row, so a preview of one
+    // lender never names the other; and Carole's preview carries the full
+    // step timeline, like her real sign-in.
+    var people = (fullData.people || []).map(function (person) {
+      if (person.name !== p.name && /^Lender/.test(person.role || "")) {
+        var copy = {};
+        for (var k in person) copy[k] = person[k];
+        copy.org = null;
+        return copy;
+      }
+      return person;
+    });
     return {
       meta: fullData.meta,
       deadlines: fullData.deadlines,
-      people: fullData.people,
-      steps: (fullData.steps || []).filter(vis),
+      people: people,
+      steps: p.tag === "Carole" ? (fullData.steps || []).slice() : (fullData.steps || []).filter(vis),
       documents: (fullData.documents || []).filter(vis),
       openItems: (fullData.openItems || []).filter(vis),
       flags: (fullData.flags || []).filter(vis),

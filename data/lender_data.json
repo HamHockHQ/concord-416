@@ -1,6 +1,15 @@
 {
  "asOf": "2026-11-20",
  "cashAvailableDefault": 19900,
+ "negotiation": {
+  "intro": "Where the Nov 20, 2026 reruns leave the decision, in plain terms. Draft wording for Matt only; nothing here is sent to any lender.",
+  "leverage": "Go back to Movement and ask whether they can beat these numbers one more time before Monday's decision.",
+  "points": [
+   "Univest Worksheet 1 has the lowest monthly payment: $2,699.94/mo at 7.375%, with $16,237.65 cash to close and $444,806.60 of interest over the life of the loan.",
+   "Univest Worksheet 2 is $2,725.49/mo, about $26/mo more than Worksheet 1, but needs only $14,758.94 cash to close, about $1,500 less cash now, at about $10,000 more interest over the life of the loan ($454,004.60, which is $9,198 more than Worksheet 1).",
+   "Movement is at $2,738.71/mo and $17,217.70 cash to close, with $463,249.40 lifetime interest and no credits on the sheet. Its replacement assistance program is still unnamed and unpriced, so it counts for nothing in this comparison until it is priced."
+  ]
+ },
  "price": 308500,
  "scenarios": {
   "3": {

@@ -44,6 +44,29 @@ full view. Money-panel figures and Matt's to-dos are never published to
 the Worker (the publish step builds from an allowlist and refuses to run
 if a money marker appears in the payload).
 
+Two slicing rules from Matt's 2026-11-20 walkthrough:
+
+- Carole (tag "Carole") sees the FULL step timeline, not only her tagged
+  steps: she is the one keeping the buyer on track, so her slice carries
+  every step (deposit, lender decision, inspection, application,
+  appraisal, commitment, settlement). Her documents, open items and
+  flags stay sliced as usual. Longer term: a per-person visibility
+  filter Matt controls, instead of this hard-coded exception.
+- Lender names stay out of other people's views. In any non-Matt slice,
+  a lender's organisation appears only on that lender's own row of the
+  people list; shared step/document text uses neutral wording ("the
+  lender named in the signed agreement"), so one lender's view never
+  names the competing lender or the contract lender. The client-side
+  Preview as in index.html mirrors both rules; keep the two in step.
+
+## Open items
+
+- Secure per-person document hosting (noted 2026-11-20, not urgent):
+  documents are currently one tap away for everyone who can see them in
+  their slice. Long term they need a secure host with per-person access
+  control (Cloudflare or GitHub, where the dashboard already lives)
+  instead of shared Drive links. Fine for now; not built.
+
 ## Publishing updates (the sync step)
 
 When the closing files change, refresh the dashboard:

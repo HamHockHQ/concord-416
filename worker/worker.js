@@ -166,11 +166,27 @@ export class DashboardStore {
     if (person.tag === "Matt") return payload;
     const vis = (item) =>
       item.personTag === person.tag || item.personTag === "All parties";
+    // Lender-name scrub (Matt walkthrough, 2026-11-20): no non-Matt view
+    // may name a lender organisation other than the viewer's own. A
+    // lender's row in the people list keeps its org only in that lender's
+    // own view; everyone else sees the row without the org, so Sam's view
+    // never names Movement and Jim's view never names Univest.
+    const people = payload.people.map((p) => {
+      if (p.name !== person.name && /^Lender/.test(p.role || "")) {
+        return { ...p, org: null };
+      }
+      return p;
+    });
     return {
       meta: payload.meta,
       deadlines: payload.deadlines,
-      people: payload.people,
-      steps: payload.steps.filter(vis),
+      people,
+      // Carole exception (Matt walkthrough, 2026-11-20): she is the one
+      // keeping the buyer on track, so her slice carries the FULL step
+      // timeline (deposit, lender decision, inspection, application,
+      // appraisal, commitment, settlement), not only the steps tagged
+      // for her. Documents, open items and flags stay sliced as usual.
+      steps: person.tag === "Carole" ? payload.steps : payload.steps.filter(vis),
       documents: payload.documents.filter(vis),
       openItems: payload.openItems.filter(vis),
       flags: (payload.flags || []).filter(vis),
