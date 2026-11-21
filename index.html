@@ -178,8 +178,8 @@
 
   /* horizontal timeline */
   .tl-scroll { overflow-x: auto; padding: 4px 2px 2px; -webkit-overflow-scrolling: touch; }
-  .tl-inner { position: relative; height: 120px; }
-  .tl-track { position: absolute; left: 0; right: 0; top: 49px; height: 3px; background: #e3e1de; border-radius: 999px; }
+  .tl-inner { position: relative; height: 164px; }
+  .tl-track { position: absolute; left: 0; right: 0; top: 73px; height: 3px; background: #e3e1de; border-radius: 999px; }
   .tl-tick {
     position: absolute; bottom: 0; transform: translateX(-50%);
     font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
@@ -191,13 +191,22 @@
     padding: 2px 7px; border-radius: 999px; white-space: nowrap;
   }
   .tl-point {
-    position: absolute; top: 0; width: 96px; margin-left: -48px; height: 100px;
+    position: absolute; top: 0; width: 96px; margin-left: -48px; height: 148px;
     display: flex; flex-direction: column; align-items: center;
     background: none; border: 0; cursor: pointer; font: inherit; color: inherit; padding: 0 2px;
   }
-  .tl-slot { height: 40px; display: flex; align-items: flex-end; justify-content: center; text-align: center; overflow: hidden; }
-  .tl-slot.below { align-items: flex-start; }
-  .tl-dotwrap { height: 20px; display: flex; align-items: center; justify-content: center; flex: none; }
+  /* Two label rows per side of the track (near r0, far r1). The render
+     code places each text (name or date) in a side+row that clears its
+     neighbours, so labels cannot overlap even where deadlines sit
+     closer together than one label box. */
+  .tl-lab { position: absolute; left: 0; right: 0; height: 32px; display: flex; justify-content: center; text-align: center; overflow: hidden; padding: 0 2px; box-sizing: border-box; }
+  .tl-lab.a { align-items: flex-end; }
+  .tl-lab.a.r0 { top: 32px; }
+  .tl-lab.a.r1 { top: 0; }
+  .tl-lab.b { align-items: flex-start; }
+  .tl-lab.b.r0 { top: 84px; }
+  .tl-lab.b.r1 { top: 116px; }
+  .tl-dotwrap { position: absolute; top: 64px; left: 0; right: 0; height: 20px; display: flex; align-items: center; justify-content: center; }
   .tl-dot {
     width: 14px; height: 14px; border-radius: 50%; background: var(--accent);
     border: 3px solid #fff; box-shadow: 0 0 0 2px var(--accent);
@@ -718,28 +727,41 @@
     var nextItem = null;
     items.forEach(function (x) { if (!nextItem && x.dt >= today) nextItem = x; });
 
-    // Label staggering (Matt walkthrough, 2026-11-20): plain alternation
-    // let labels collide where deadlines sit close together (Nov 23 and
-    // Nov 25 are 40px apart, less than one 96px label box, so a date and
-    // the next point's name shared the same band and overlapped). Each
-    // point's name now goes on the side of the track whose previous name
-    // centre is farthest back, with alternating preference, so two names
-    // on the same side are never closer than NAME_MIN_GAP px; the date
-    // takes the other side, and same-side dates inherit the same spacing.
-    var NAME_MIN_GAP = 108;
-    var lastNameX = { above: -Infinity, below: -Infinity };
-    var lastSide = "below";
+    // Label staggering (Matt walkthrough, 2026-11-20): deadlines can sit
+    // closer together than one label box (Nov 23 and Nov 25 are 40px
+    // apart), so plain above/below alternation overlapped: a point's
+    // date shares its side with the neighbour's name. Each side of the
+    // track therefore has two rows (near r0, far r1). Every text (name
+    // or date) is placed in the first side+row whose previous occupant's
+    // right edge it clears, using conservative half-widths (name 46px,
+    // date 37px), so placed labels cannot overlap at any width.
+    var HALF = { name: 46, date: 37 };
+    var lastRight = { above0: -Infinity, above1: -Infinity, below0: -Infinity, below1: -Infinity };
+    var lastNameSide = "below";
     items.forEach(function (x) {
       var cx = leftPx(x.dt.getTime());
-      var pref = lastSide === "above" ? "below" : "above";
-      var other = pref === "above" ? "below" : "above";
-      var side;
-      if (cx - lastNameX[pref] >= NAME_MIN_GAP) side = pref;
-      else if (cx - lastNameX[other] >= NAME_MIN_GAP) side = other;
-      else side = (cx - lastNameX.above >= cx - lastNameX.below) ? "above" : "below";
-      lastNameX[side] = cx;
-      lastSide = side;
-      x.nameSide = side;
+      var prefSide = lastNameSide === "above" ? "below" : "above";
+      var sideOrder = [prefSide, prefSide === "above" ? "below" : "above"];
+      var placed = null;
+      for (var si = 0; si < 2 && !placed; si++) {
+        var ns = sideOrder[si];
+        var ds = ns === "above" ? "below" : "above";
+        for (var nr = 0; nr < 2 && !placed; nr++) {
+          if (cx - HALF.name <= lastRight[ns + nr] + 4) continue;
+          for (var dr = 0; dr < 2; dr++) {
+            if (cx - HALF.date <= lastRight[ds + dr] + 4) continue;
+            placed = { nameSide: ns, nameRow: nr, dateSide: ds, dateRow: dr };
+            break;
+          }
+        }
+      }
+      if (!placed) { // unreachable with this deadline set; sane fallback
+        placed = { nameSide: prefSide, nameRow: 1, dateSide: prefSide === "above" ? "below" : "above", dateRow: 1 };
+      }
+      lastRight[placed.nameSide + placed.nameRow] = cx + HALF.name;
+      lastRight[placed.dateSide + placed.dateRow] = cx + HALF.date;
+      lastNameSide = placed.nameSide;
+      x.place = placed;
     });
 
     var html = '<div class="tl-track" aria-hidden="true"></div>';
@@ -758,8 +780,10 @@
       var cls = "tl-point" + (past ? " past" : "") + (x === nextItem ? " next" : "");
       var name = '<span class="tl-name">' + esc(maybeScrub(x.dl.label)) + '</span>';
       var date = '<span class="tl-date">' + esc(x.dl.date) + '</span>';
-      var above = x.nameSide === "above" ? name : date;
-      var below = x.nameSide === "above" ? date : name;
+      var nameLab = '<span class="tl-lab ' + (x.place.nameSide === "above" ? "a" : "b") + " r" + x.place.nameRow + '">' + name + '</span>';
+      var dateLab = '<span class="tl-lab ' + (x.place.dateSide === "above" ? "a" : "b") + " r" + x.place.dateRow + '">' + date + '</span>';
+      var aboveLab = x.place.nameSide === "above" ? nameLab : dateLab;
+      var belowLab = x.place.nameSide === "above" ? dateLab : nameLab;
       // No aria-label here: the button's visible text (label + date)
       // is its accessible name. An explicit aria-label on these
       // multi-span buttons trips axe's label-content-name-mismatch
@@ -767,9 +791,9 @@
       // 2026-11-20); name-from-content passes.
       html += '<button type="button" class="' + cls + '" data-dlkey="' + esc(x.k) + '" data-x="' + leftPx(x.dt.getTime()) +
         '" style="left:' + leftPx(x.dt.getTime()) + 'px">' +
-        '<span class="tl-slot">' + above + '</span>' +
+        aboveLab +
         '<span class="tl-dotwrap"><span class="tl-dot" aria-hidden="true"></span></span>' +
-        '<span class="tl-slot below">' + below + '</span></button>';
+        belowLab + '</button>';
     });
     box.style.width = width + "px";
     box.innerHTML = html;

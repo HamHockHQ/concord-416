@@ -280,7 +280,10 @@ check("jim_slice_never_names_univest",
 import re as _re
 matt_blob = json.dumps(dm)
 others = {"carole": json.dumps(d), "sam": sam_blob, "jim": jim_blob}
-leaks = {k: [m for m in ["negotiation", "Negotiation", "444806"] if m in v]
+# Markers must be distinctive to the lender negotiation section: the
+# bare word "negotiation" also appears in the shared seller step title
+# "Inspection results and repair negotiation", so it is not a leak.
+leaks = {k: [m for m in ["beat these numbers", "444806", "lowest monthly"] if m in v]
          for k, v in others.items()}
 cur_hits = {k: _re.findall(r"\$\s?\d[\d,]*(?:\.\d{2})?", v) for k, v in others.items()}
 check("negotiation_matt_only_no_currency_in_shared_slices",
