@@ -178,8 +178,8 @@
 
   /* horizontal timeline */
   .tl-scroll { overflow-x: auto; padding: 4px 2px 2px; -webkit-overflow-scrolling: touch; }
-  .tl-inner { position: relative; height: 164px; }
-  .tl-track { position: absolute; left: 0; right: 0; top: 73px; height: 3px; background: #e3e1de; border-radius: 999px; }
+  .tl-inner { position: relative; height: 196px; }
+  .tl-track { position: absolute; left: 0; right: 0; top: 89px; height: 3px; background: #e3e1de; border-radius: 999px; }
   .tl-tick {
     position: absolute; bottom: 0; transform: translateX(-50%);
     font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
@@ -191,22 +191,23 @@
     padding: 2px 7px; border-radius: 999px; white-space: nowrap;
   }
   .tl-point {
-    position: absolute; top: 0; width: 96px; margin-left: -48px; height: 148px;
+    position: absolute; top: 0; width: 96px; margin-left: -48px; height: 180px;
     display: flex; flex-direction: column; align-items: center;
     background: none; border: 0; cursor: pointer; font: inherit; color: inherit; padding: 0 2px;
   }
   /* Two label rows per side of the track (near r0, far r1). The render
      code places each text (name or date) in a side+row that clears its
      neighbours, so labels cannot overlap even where deadlines sit
-     closer together than one label box. */
-  .tl-lab { position: absolute; left: 0; right: 0; height: 32px; display: flex; justify-content: center; text-align: center; overflow: hidden; padding: 0 2px; box-sizing: border-box; }
+     closer together than one label box. Rows are 40px: a long name
+     wraps to at most 3 lines (about 39px) inside its row. */
+  .tl-lab { position: absolute; left: 0; right: 0; height: 40px; display: flex; justify-content: center; text-align: center; overflow: hidden; padding: 0 2px; box-sizing: border-box; }
   .tl-lab.a { align-items: flex-end; }
-  .tl-lab.a.r0 { top: 32px; }
+  .tl-lab.a.r0 { top: 40px; }
   .tl-lab.a.r1 { top: 0; }
   .tl-lab.b { align-items: flex-start; }
-  .tl-lab.b.r0 { top: 84px; }
-  .tl-lab.b.r1 { top: 116px; }
-  .tl-dotwrap { position: absolute; top: 64px; left: 0; right: 0; height: 20px; display: flex; align-items: center; justify-content: center; }
+  .tl-lab.b.r0 { top: 100px; }
+  .tl-lab.b.r1 { top: 140px; }
+  .tl-dotwrap { position: absolute; top: 80px; left: 0; right: 0; height: 20px; display: flex; align-items: center; justify-content: center; }
   .tl-dot {
     width: 14px; height: 14px; border-radius: 50%; background: var(--accent);
     border: 3px solid #fff; box-shadow: 0 0 0 2px var(--accent);
